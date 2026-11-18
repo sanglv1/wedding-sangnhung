@@ -1,16 +1,15 @@
 'use client'
 
 /* eslint-disable @next/next/no-img-element -- ảnh xem trước trong trang quản trị, không cần tối ưu */
-import { useState } from 'react'
-import { Crosshair, ImagePlus, Plus, Star } from 'lucide-react'
+import { Crosshair, ImagePlus, Star } from 'lucide-react'
 import { describeDate, type WeddingContent } from '@/lib/content'
+import { DEFAULT_THEME, isThemeId, THEMES, THEME_ORDER, type ThemeId } from '@/lib/themes'
 import {
   AdminSection,
   Field,
   Grid,
   ListControls,
   SmallButton,
-  TextArea,
   TextInput,
   UploadButton,
   moveItem,
@@ -23,6 +22,89 @@ interface SectionProps {
   update: Update
 }
 
+function hourPhrase(time: string) {
+  const match = /^(\d{1,2})(?::(\d{2}))?/.exec(time.trim())
+  if (!match) return time.trim()
+  const hour = String(Number(match[1]))
+  const minute = match[2]
+  if (!minute || minute === '00') return `${hour} giờ`
+  return `${hour} giờ ${minute}`
+}
+
+function venuePhrase(venue: string) {
+  const text = venue.trim()
+  if (!text) return ''
+  const lower = text.toLocaleLowerCase('vi')
+  return lower.startsWith('tại ') ? `, ${lower}` : `, tại ${lower}`
+}
+
+const MEAL_WEEKDAYS = ['CHỦ NHẬT', 'THỨ HAI', 'THỨ BA', 'THỨ TƯ', 'THỨ NĂM', 'THỨ SÁU', 'THỨ BẢY']
+
+function mealPreview(time: string) {
+  const match = /(\d{1,2})\s*h(?:\s*(\d{2}))?[^\d]*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(time)
+  if (!match) return null
+  const hour = String(Number(match[1])).padStart(2, '0')
+  const minute = match[2] ?? '00'
+  const day = Number(match[3])
+  const month = Number(match[4])
+  const year = Number(match[5])
+  const weekday = MEAL_WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]
+  return `${hour}:${minute} · ${weekday} · ngày ${day} tháng ${month}, ${year}`
+}
+
+export function ThemeSection({ content, update }: SectionProps) {
+  const theme: ThemeId = isThemeId(content.theme) ? content.theme : DEFAULT_THEME
+  const names = `${content.couple.groomShort || 'Chú rể'} & ${content.couple.brideShort || 'Cô dâu'}`
+
+  return (
+    <AdminSection
+      id="mau-nen"
+      title="Màu nền thiệp"
+      description="Màu khách thấy khi mở link. Nút đổi màu trên thiệp chỉ nhớ trên máy người bấm, không đổi màu này."
+    >
+      <div
+        data-theme={theme}
+        className="rounded-2xl border border-black/10 px-5 py-6 text-center shadow-inner"
+        style={{ background: 'var(--w-bg)', color: 'var(--w-strong)' }}
+      >
+        <p className="text-[0.68rem] uppercase tracking-[0.32em]" style={{ color: 'var(--w-muted)' }}>
+          Trân trọng kính mời
+        </p>
+        <p className="mt-2 font-serif text-3xl leading-none">{names}</p>
+        <p className="mt-2 text-sm" style={{ color: 'var(--w-soft)' }}>
+          {THEMES[theme].name}
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {THEME_ORDER.map((id) => {
+          const selected = id === theme
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={selected}
+              onClick={() =>
+                update((d) => {
+                  d.theme = id
+                })
+              }
+              className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 text-left text-sm transition ${
+                selected ? 'border-rose-500 bg-rose-50 ring-2 ring-rose-200' : 'border-stone-200 bg-white hover:border-stone-300'
+              }`}
+            >
+              <span
+                className="h-8 w-8 shrink-0 rounded-full border border-black/10 shadow-sm"
+                style={{ background: THEMES[id].swatch }}
+              />
+              <span className="font-medium text-stone-800">{THEMES[id].name}</span>
+            </button>
+          )
+        })}
+      </div>
+    </AdminSection>
+  )
+}
+
 export function CoupleSection({ content, update }: SectionProps) {
   const c = content.couple
   const set = (key: keyof typeof c) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -31,21 +113,25 @@ export function CoupleSection({ content, update }: SectionProps) {
     })
 
   return (
-    <AdminSection id="co-dau-chu-re" title="Cô dâu & chú rể" description="Tên hiển thị trên thiệp bìa, lời báo tin, thanh menu và ảnh chia sẻ link.">
+    <AdminSection
+      id="co-dau-chu-re"
+      title="Cô dâu & chú rể"
+      description="Tên lớn in trên thư mời. Tên ngắn ở hộp mừng và ảnh chia sẻ. Tên menu ở thanh trên cùng."
+    >
       <Grid>
-        <Field label="Họ tên đầy đủ chú rể">
+        <Field label="Tên chú rể trên thư mời" hint="Chữ lớn, ví dụ: Lương Sáng">
           <TextInput value={c.groom} onChange={set('groom')} />
         </Field>
-        <Field label="Họ tên đầy đủ cô dâu">
+        <Field label="Tên cô dâu trên thư mời" hint="Ví dụ: Trần Nhung">
           <TextInput value={c.bride} onChange={set('bride')} />
         </Field>
-        <Field label="Tên chú rể trên thiệp" hint="Hiện to ở thiệp bìa, ví dụ: Lương Sáng">
+        <Field label="Tên ngắn chú rể" hint="Hộp mừng và dòng chia sẻ link">
           <TextInput value={c.groomShort} onChange={set('groomShort')} />
         </Field>
-        <Field label="Tên cô dâu trên thiệp" hint="Ví dụ: Trần Nhung">
+        <Field label="Tên ngắn cô dâu">
           <TextInput value={c.brideShort} onChange={set('brideShort')} />
         </Field>
-        <Field label="Tên chú rể trên menu" hint="Ngắn gọn, ví dụ: Sáng">
+        <Field label="Tên chú rể trên menu" hint="Ngắn, ví dụ: Sáng">
           <TextInput value={c.groomBrand} onChange={set('groomBrand')} />
         </Field>
         <Field label="Tên cô dâu trên menu" hint="Ví dụ: Nhung">
@@ -56,234 +142,145 @@ export function CoupleSection({ content, update }: SectionProps) {
   )
 }
 
-export function EventSection({ content, update }: SectionProps) {
+export function LetterSection({ content, update }: SectionProps) {
   const e = content.event
   const start = describeDate(e.start)
-  const [coords, setCoords] = useState(`${e.venueLat}, ${e.venueLng}`)
-  const set = (key: Exclude<keyof typeof e, 'venueLat' | 'venueLng'>) =>
+  const set = (key: 'start' | 'end' | 'lunarDate' | 'ceremonyTime' | 'ceremonyVenue') =>
     (ev: React.ChangeEvent<HTMLInputElement>) =>
       update((d) => {
         d.event[key] = ev.target.value
       })
-
-  const onCoords = (value: string) => {
-    setCoords(value)
-    const m = value.match(/(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)/)
-    if (m) {
-      update((d) => {
-        d.event.venueLat = Number(m[1])
-        d.event.venueLng = Number(m[2])
-      })
-    }
-  }
+  const when = hourPhrase(e.ceremonyTime)
 
   return (
-    <AdminSection id="su-kien" title="Ngày giờ & địa điểm" description="Thứ, ngày, buổi trên thiệp và đếm ngược được tự tính từ giờ bắt đầu.">
+    <AdminSection
+      id="thu-moi"
+      title="Thư mời"
+      description="Ngày, giờ và dòng “Hôn lễ lúc…” in cạnh ảnh. Đếm ngược chạy tới giờ kết thúc."
+    >
       <Grid>
-        <Field label="Bắt đầu lễ (giờ Việt Nam)">
+        <Field label="Giờ hôn lễ" hint="Thứ, ngày và tháng trên thiệp lấy từ đây.">
           <TextInput type="datetime-local" value={e.start} onChange={set('start')} />
         </Field>
-        <Field label="Kết thúc tiệc" hint="Dùng cho nút “Thêm vào lịch”">
+        <Field label="Giờ kết thúc" hint="Đếm ngược và nút thêm vào lịch.">
           <TextInput type="datetime-local" value={e.end} onChange={set('end')} />
         </Field>
-      </Grid>
-      {start && (
-        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">
-          Thiệp sẽ hiển thị: <b>{start.dayOfWeek}</b>, {start.date} · {start.timeDisplay}
-        </p>
-      )}
-      <Grid>
-        <Field label="Ngày âm lịch" hint="Ví dụ: Tức ngày 12 tháng 11 năm Bính Ngọ">
-          <TextInput value={e.lunarDate} onChange={set('lunarDate')} />
+        <Field label="Giờ in trên thư" hint="Ví dụ 11:00 thành “11 giờ”.">
+          <TextInput value={e.ceremonyTime} onChange={set('ceremonyTime')} placeholder="11:00" />
         </Field>
-        <Field label="Năm âm lịch" hint="Ví dụ: Bính Ngọ">
-          <TextInput value={e.lunarYear} onChange={set('lunarYear')} />
-        </Field>
-      </Grid>
-      <Field label="Nơi tổ chức lễ (hiện trên thiệp báo tin)">
-        <TextInput value={e.location} onChange={set('location')} />
-      </Field>
-      <Field
-        label="Toạ độ bản đồ"
-        hint="Mở Google Maps, chuột phải vào địa điểm, bấm vào dòng toạ độ đầu tiên để sao chép rồi dán vào đây."
-      >
-        <TextInput value={coords} onChange={(ev) => onCoords(ev.target.value)} placeholder="20.6635739, 106.1004076" />
-      </Field>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Tên lễ">
-          <TextInput value={e.ceremonyName} onChange={set('ceremonyName')} />
-        </Field>
-        <Field label="Giờ lễ" hint="Ví dụ: 14:00 - 15:30">
-          <TextInput value={e.ceremonyTime} onChange={set('ceremonyTime')} />
-        </Field>
-        <Field label="Địa điểm lễ">
+        <Field label="Nơi in trên thư" hint="Ví dụ: Nhà chú rể">
           <TextInput value={e.ceremonyVenue} onChange={set('ceremonyVenue')} />
         </Field>
-        <Field label="Tên tiệc">
-          <TextInput value={e.mealName} onChange={set('mealName')} />
-        </Field>
-        <Field label="Giờ tiệc">
-          <TextInput value={e.mealTime} onChange={set('mealTime')} />
-        </Field>
-        <Field label="Địa điểm tiệc">
-          <TextInput value={e.mealVenue} onChange={set('mealVenue')} />
-        </Field>
-      </div>
-
-      {(['groomFamily', 'brideFamily'] as const).map((side) => (
-        <Grid key={side}>
-          <Field label={side === 'groomFamily' ? 'Địa chỉ nhà trai' : 'Địa chỉ nhà gái'}>
-            <TextInput
-              value={content.addresses[side].address}
-              onChange={(ev) =>
-                update((d) => {
-                  d.addresses[side].address = ev.target.value
-                })
-              }
-            />
-          </Field>
-          <Field label="Link Google Maps" hint="Google Maps → Chia sẻ → Sao chép đường liên kết">
-            <TextInput
-              value={content.addresses[side].mapsUrl}
-              onChange={(ev) =>
-                update((d) => {
-                  d.addresses[side].mapsUrl = ev.target.value
-                })
-              }
-            />
-          </Field>
-          <Field label="Giờ riêng" hint="Để trống nếu nhà này cùng giờ lễ chung">
-            <TextInput
-              value={content.addresses[side].time ?? ''}
-              onChange={(ev) =>
-                update((d) => {
-                  d.addresses[side].time = ev.target.value
-                })
-              }
-              placeholder="Ví dụ: 08:00 - 10:00"
-            />
-          </Field>
-        </Grid>
-      ))}
+      </Grid>
+      <Field label="Ngày âm lịch" hint="In trong ngoặc dưới ngày dương. Ví dụ: Tức ngày 12 tháng 11 năm Bính Ngọ">
+        <TextInput value={e.lunarDate} onChange={set('lunarDate')} />
+      </Field>
+      {start && (
+        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm leading-relaxed text-rose-800">
+          Thư sẽ in: <b>{start.dayOfWeek}</b> · {start.day} · tháng {start.month} {start.year}
+          {e.lunarDate.trim() ? ` · (${e.lunarDate.trim()})` : ''}
+          <br />
+          Hôn lễ lúc {when || '…'}{venuePhrase(e.ceremonyVenue)}
+        </p>
+      )}
     </AdminSection>
   )
 }
 
-export function FamilySection({ content, update }: SectionProps) {
+export function HousesSection({ content, update }: SectionProps) {
   return (
-    <AdminSection id="gia-dinh" title="Gia đình hai bên" description="Tên bố mẹ hiển thị ở phần “Gia đình hai bên”.">
-      {(['nhaTrai', 'nhaGai'] as const).map((side) => (
-        <Grid key={side}>
-          {(['ong', 'ba'] as const).map((who) => (
-            <Field key={who} label={`${who === 'ong' ? 'Ông' : 'Bà'} (${side === 'nhaTrai' ? 'nhà trai' : 'nhà gái'})`}>
+    <AdminSection
+      id="hai-nha"
+      title="Ông bà & hai nhà"
+      description="In dưới thư mời, và lại hiện ở phần bữa cơm kèm nút chỉ đường."
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        {(
+          [
+            ['nhaTrai', 'groomFamily', 'Nhà trai'],
+            ['nhaGai', 'brideFamily', 'Nhà gái'],
+          ] as const
+        ).map(([familySide, addressSide, label]) => (
+          <div key={familySide} className="space-y-4 rounded-xl border border-stone-200 bg-stone-50 p-4">
+            <p className="font-medium text-stone-800">{label}</p>
+            <Field label="Ông">
               <TextInput
-                value={content.family[side][who]}
+                value={content.family[familySide].ong}
                 onChange={(ev) =>
                   update((d) => {
-                    d.family[side][who] = ev.target.value
+                    d.family[familySide].ong = ev.target.value
                   })
                 }
               />
             </Field>
-          ))}
-        </Grid>
-      ))}
+            <Field label="Bà">
+              <TextInput
+                value={content.family[familySide].ba}
+                onChange={(ev) =>
+                  update((d) => {
+                    d.family[familySide].ba = ev.target.value
+                  })
+                }
+              />
+            </Field>
+            <Field label="Địa chỉ" hint="Mỗi dấu phẩy xuống một dòng trên thiệp.">
+              <TextInput
+                value={content.addresses[addressSide].address}
+                onChange={(ev) =>
+                  update((d) => {
+                    d.addresses[addressSide].address = ev.target.value
+                  })
+                }
+              />
+            </Field>
+            <Field label="Link chỉ đường" hint="Google Maps → Chia sẻ → Sao chép đường liên kết">
+              <TextInput
+                value={content.addresses[addressSide].mapsUrl}
+                onChange={(ev) =>
+                  update((d) => {
+                    d.addresses[addressSide].mapsUrl = ev.target.value
+                  })
+                }
+              />
+            </Field>
+          </div>
+        ))}
+      </div>
     </AdminSection>
   )
 }
 
-export function StorySection({ content, update }: SectionProps) {
-  const s = content.story
-  return (
-    <AdminSection id="cau-chuyen" title="Lời báo tin & câu chuyện tình yêu">
-      <Field label="Lời báo tin (dòng chữ nhỏ trên thiệp báo tin)">
-        <TextInput
-          value={content.announcement}
-          onChange={(ev) =>
-            update((d) => {
-              d.announcement = ev.target.value
-            })
-          }
-        />
-      </Field>
-      <Field label="Tiêu đề">
-        <TextInput
-          value={s.title}
-          onChange={(ev) =>
-            update((d) => {
-              d.story.title = ev.target.value
-            })
-          }
-        />
-      </Field>
-      <Field label="Câu chuyện" hint="Để trống nếu không muốn hiện đoạn văn này">
-        <TextArea
-          rows={5}
-          value={s.text}
-          onChange={(ev) =>
-            update((d) => {
-              d.story.text = ev.target.value
-            })
-          }
-        />
-      </Field>
+export function MealSection({ content, update }: SectionProps) {
+  const meal = content.event
+  const preview = mealPreview(meal.mealTime)
+  const set = (key: 'mealName' | 'mealTime') => (ev: React.ChangeEvent<HTMLInputElement>) =>
+    update((d) => {
+      d.event[key] = ev.target.value
+    })
 
-      <div>
-        <p className="text-sm font-medium text-stone-700">Các mốc thời gian</p>
-        <div className="mt-2 space-y-2">
-          {s.timeline.map((item, i) => (
-            <div key={i} className="flex flex-wrap items-center gap-2">
-              <TextInput
-                className="!w-32"
-                value={item.date}
-                placeholder="05-2023"
-                aria-label="Thời gian"
-                onChange={(ev) =>
-                  update((d) => {
-                    d.story.timeline[i].date = ev.target.value
-                  })
-                }
-              />
-              <TextInput
-                className="flex-1 !w-auto min-w-[10rem]"
-                value={item.event}
-                placeholder="Lần đầu gặp gỡ"
-                aria-label="Sự kiện"
-                onChange={(ev) =>
-                  update((d) => {
-                    d.story.timeline[i].event = ev.target.value
-                  })
-                }
-              />
-              <ListControls
-                index={i}
-                length={s.timeline.length}
-                onMove={(from, to) =>
-                  update((d) => {
-                    d.story.timeline = moveItem(d.story.timeline, from, to)
-                  })
-                }
-                onRemove={(idx) =>
-                  update((d) => {
-                    d.story.timeline.splice(idx, 1)
-                  })
-                }
-              />
-            </div>
-          ))}
-        </div>
-        <SmallButton
-          className="mt-3"
-          onClick={() =>
-            update((d) => {
-              d.story.timeline.push({ date: '', event: '' })
-            })
-          }
-        >
-          <Plus className="w-3.5 h-3.5" /> Thêm mốc
-        </SmallButton>
-      </div>
+  return (
+    <AdminSection
+      id="bua-com"
+      title="Bữa cơm thân mật"
+      description="Phần lịch phía dưới thư mời. Địa chỉ hai nhà lấy ở mục ông bà."
+    >
+      <Grid>
+        <Field label="Tên phần" hint="Tiêu đề, ví dụ: Bữa cơm thân mật">
+          <TextInput value={meal.mealName} onChange={set('mealName')} />
+        </Field>
+        <Field label="Giờ và ngày" hint="Viết đủ ngày để thiệp vẽ lịch. Ví dụ: Từ 16h ngày 19/12/2026">
+          <TextInput value={meal.mealTime} onChange={set('mealTime')} />
+        </Field>
+      </Grid>
+      {preview ? (
+        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">
+          Thiệp sẽ in: <b>{preview}</b>
+        </p>
+      ) : (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Chưa tách được giờ và ngày. Viết theo mẫu: Từ 16h ngày 19/12/2026
+        </p>
+      )}
     </AdminSection>
   )
 }
@@ -309,8 +306,8 @@ export function ImagesSection({ content, update }: SectionProps) {
   return (
     <AdminSection
       id="anh"
-      title="Ảnh bìa & album"
-      description="Ảnh tải lên được lưu vào public/gallery với tên mới, không ghi đè ảnh cũ."
+      title="Ảnh thiệp & album"
+      description="Ảnh bên trái của thư mời. Album hiện ở phần Khoảnh khắc. Ảnh tải lên lưu vào public/gallery, không ghi đè ảnh cũ."
     >
       <div>
         <p className="text-sm font-medium text-stone-700">Ảnh bìa</p>

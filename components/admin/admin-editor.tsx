@@ -1,35 +1,43 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Check, ExternalLink, Loader2, RotateCcw, Save } from 'lucide-react'
+import { Check, ExternalLink, Loader2, LogOut, RotateCcw, Save } from 'lucide-react'
 import type { WeddingContent } from '@/lib/content'
+import { ADMIN_PASSWORD_KEY, verifyGuestbookPassword } from '@/lib/guestbook'
+import { errorText } from './shared'
 import {
   CoupleSection,
-  EventSection,
-  FamilySection,
   GiftSection,
+  HousesSection,
   ImagesSection,
+  LetterSection,
+  MealSection,
   MusicSection,
-  StorySection,
+  ThemeSection,
   type Update,
 } from './admin-sections'
 
 const NAV = [
+  { id: 'mau-nen', label: 'Màu nền' },
   { id: 'co-dau-chu-re', label: 'Cô dâu & chú rể' },
-  { id: 'su-kien', label: 'Ngày giờ & địa điểm' },
-  { id: 'gia-dinh', label: 'Gia đình' },
-  { id: 'cau-chuyen', label: 'Câu chuyện' },
-  { id: 'anh', label: 'Ảnh bìa & album' },
-  { id: 'mung-cuoi', label: 'Mừng cưới' },
+  { id: 'thu-moi', label: 'Thư mời' },
+  { id: 'hai-nha', label: 'Ông bà & hai nhà' },
+  { id: 'bua-com', label: 'Bữa cơm' },
+  { id: 'anh', label: 'Ảnh' },
+  { id: 'mung-cuoi', label: 'Hộp mừng' },
   { id: 'nhac', label: 'Nhạc nền' },
 ]
 
 type Status = { kind: 'idle' } | { kind: 'saving' } | { kind: 'saved' } | { kind: 'error'; message: string }
 
-export function AdminEditor({ initial }: { initial: WeddingContent }) {
+export function AdminEditor({ initial, requirePassword }: { initial: WeddingContent; requirePassword: boolean }) {
   const [saved, setSaved] = useState(initial)
   const [content, setContent] = useState(initial)
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
+  const [password, setPassword] = useState<string | null>(null)
+  const [input, setInput] = useState('')
+  const [checking, setChecking] = useState(false)
+  const [loginError, setLoginError] = useState('')
   const dirty = content !== saved
 
   const update: Update = useCallback((fn) => {
@@ -44,19 +52,21 @@ export function AdminEditor({ initial }: { initial: WeddingContent }) {
   const save = useCallback(async () => {
     setStatus({ kind: 'saving' })
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (password) headers['x-admin-password'] = password
       const res = await fetch('/api/admin/content', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(content),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Lưu thất bại')
       setSaved(content)
       setStatus({ kind: 'saved' })
     } catch (e) {
       setStatus({ kind: 'error', message: e instanceof Error ? e.message : 'Lưu thất bại' })
     }
-  }, [content])
+  }, [content, password])
 
   useEffect(() => {
     if (!dirty) return
@@ -75,6 +85,72 @@ export function AdminEditor({ initial }: { initial: WeddingContent }) {
     }
   }, [dirty, save])
 
+  useEffect(() => {
+    if (!requirePassword) return
+    const stored = sessionStorage.getItem(ADMIN_PASSWORD_KEY)
+    if (!stored) return
+    verifyGuestbookPassword(stored)
+      .then(() => setPassword(stored))
+      .catch(() => sessionStorage.removeItem(ADMIN_PASSWORD_KEY))
+  }, [requirePassword])
+
+  const login = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setChecking(true)
+    setLoginError('')
+    try {
+      await verifyGuestbookPassword(input)
+      sessionStorage.setItem(ADMIN_PASSWORD_KEY, input)
+      setPassword(input)
+      setInput('')
+    } catch (err) {
+      setLoginError(errorText(err))
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  const logout = () => {
+    sessionStorage.removeItem(ADMIN_PASSWORD_KEY)
+    setPassword(null)
+  }
+
+  if (requirePassword && !password) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-stone-100 px-4 text-stone-800">
+        <form onSubmit={login} className="w-full max-w-sm space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+          <h1 className="text-center text-xl font-semibold text-stone-900">Quản trị thiệp cưới</h1>
+          <p className="text-center text-sm text-stone-500">Cùng mật khẩu trang quản lý khách.</p>
+          <label htmlFor="admin-pass" className="block text-sm font-medium text-stone-700">
+            Mật khẩu
+          </label>
+          <input
+            id="admin-pass"
+            type="password"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            required
+            autoFocus
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-rose-400"
+          />
+          {loginError && (
+            <p className="text-center text-sm text-red-600" role="alert">
+              {loginError}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={checking}
+            className="w-full rounded-xl bg-rose-600 py-3 font-semibold text-white hover:bg-rose-700 disabled:opacity-70"
+          >
+            {checking ? 'Đang kiểm tra...' : 'Đăng nhập'}
+          </button>
+        </form>
+      </main>
+    )
+  }
+
   const props = { content, update }
 
   return (
@@ -84,7 +160,8 @@ export function AdminEditor({ initial }: { initial: WeddingContent }) {
           <div>
             <h1 className="text-base font-semibold text-stone-900">Quản trị thiệp cưới</h1>
             <p className="text-xs text-stone-500">
-              {content.couple.groomShort} &amp; {content.couple.brideShort} · lưu vào content/wedding.json
+              {content.couple.groomShort} &amp; {content.couple.brideShort}
+              {requirePassword ? ' · lưu lên mạng, khách thấy ngay' : ' · lưu vào content/wedding.json'}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -96,6 +173,15 @@ export function AdminEditor({ initial }: { initial: WeddingContent }) {
             >
               <ExternalLink className="w-4 h-4" /> Xem thiệp
             </a>
+            {requirePassword && (
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+              >
+                <LogOut className="w-4 h-4" /> Thoát
+              </button>
+            )}
             <button
               type="button"
               disabled={!dirty || status.kind === 'saving'}
@@ -135,13 +221,24 @@ export function AdminEditor({ initial }: { initial: WeddingContent }) {
 
         <main className="space-y-6 pb-16">
           <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Trang này chỉ chạy trên máy của bạn khi chạy <code className="font-mono">npm run dev</code>. Lưu xong, thiệp
-            trên máy cập nhật ngay. Muốn khách thấy thì commit và deploy lại lên Vercel.
+            {requirePassword ? (
+              <>
+                Đang sửa bản khách đang xem. Bấm Lưu là thấy ngay, không cần deploy lại. Ảnh và nhạc mới thì tải trên
+                máy khi chạy <code className="font-mono">npm run dev</code>, rồi deploy.
+              </>
+            ) : (
+              <>
+                Lưu tại đây ghi vào <code className="font-mono">content/wedding.json</code> trên máy. Muốn khách thấy thì
+                deploy lại. Bản trên Vercel mở <code className="font-mono">/admin</code>, đăng nhập bằng mật khẩu trang
+                quản lý, lưu là khách thấy ngay.
+              </>
+            )}
           </p>
+          <ThemeSection {...props} />
           <CoupleSection {...props} />
-          <EventSection {...props} />
-          <FamilySection {...props} />
-          <StorySection {...props} />
+          <LetterSection {...props} />
+          <HousesSection {...props} />
+          <MealSection {...props} />
           <ImagesSection {...props} />
           <GiftSection {...props} />
           <MusicSection {...props} />

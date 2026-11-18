@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { NextResponse } from 'next/server'
-import { rejectIfNotAdmin } from '@/lib/admin-guard'
+import { authorizeAdminWrite } from '@/lib/admin-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +29,7 @@ function safeName(original: string, ext: string) {
 }
 
 export async function POST(request: Request) {
-  const rejected = rejectIfNotAdmin(request)
+  const rejected = await authorizeAdminWrite(request)
   if (rejected) return rejected
 
   const form = await request.formData()
@@ -50,9 +50,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `${file.name}: quá ${rule.maxMB} MB` }, { status: 400 })
     }
     const dir = join(process.cwd(), 'public', folder)
-    await mkdir(dir, { recursive: true })
     const name = safeName(file.name, ext)
-    await writeFile(join(dir, name), Buffer.from(await file.arrayBuffer()))
+    try {
+      await mkdir(dir, { recursive: true })
+      await writeFile(join(dir, name), Buffer.from(await file.arrayBuffer()))
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code
+      if (code === 'EROFS' || code === 'EPERM' || code === 'EACCES' || process.env.VERCEL) {
+        return NextResponse.json(
+          {
+            error:
+              'Trên Vercel không lưu được ảnh và nhạc mới. Hãy tải file khi chạy npm run dev trên máy, rồi deploy lại. Chữ, màu và ngày thì lưu được ngay tại đây.',
+          },
+          { status: 400 },
+        )
+      }
+      throw err
+    }
     saved.push(`/${folder}/${name}`)
   }
 

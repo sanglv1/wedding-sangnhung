@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Loader2, Trash2, Upload } from 'lucide-react'
+import { ADMIN_PASSWORD_KEY } from '@/lib/guestbook'
 
 export function AdminSection({
   id,
@@ -123,7 +124,14 @@ export function UploadButton({
       const form = new FormData()
       form.append('folder', folder)
       for (const f of Array.from(files)) form.append('files', f)
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: form })
+      const headers: Record<string, string> = {}
+      try {
+        const password = sessionStorage.getItem(ADMIN_PASSWORD_KEY)
+        if (password) headers['x-admin-password'] = password
+      } catch {
+        /* trình duyệt chặn sessionStorage thì để API từ chối */
+      }
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: form, headers })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Tải lên thất bại')
       onUploaded(data.paths)

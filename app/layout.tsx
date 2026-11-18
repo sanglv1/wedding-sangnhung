@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import { Be_Vietnam_Pro, Great_Vibes } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { DEFAULT_THEME, THEME_INIT_SCRIPT } from '@/lib/themes'
+import { CONTENT } from '@/lib/content'
+import { getLiveContent } from '@/lib/live-content'
+import { DEFAULT_THEME, isThemeId, THEME_INIT_SCRIPT, THEMES } from '@/lib/themes'
 import './globals.css'
+
+const fileTheme = isThemeId(CONTENT.theme) ? CONTENT.theme : DEFAULT_THEME
 
 const bodyFont = Be_Vietnam_Pro({
   weight: ['300', '400', '500', '600', '700'],
@@ -50,22 +54,25 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#420a10',
+  themeColor: THEMES[fileTheme].swatch,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const content = await getLiveContent()
+  const siteTheme = isThemeId(content.theme) ? content.theme : DEFAULT_THEME
   return (
     <html
       lang="vi"
       className={`${bodyFont.variable} ${scriptFont.variable}`}
-      data-theme={DEFAULT_THEME}
+      data-theme={siteTheme}
       suppressHydrationWarning
     >
       <head>
+        <meta name="theme-color" content={THEMES[siteTheme].swatch} />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="font-sans antialiased overflow-x-hidden">

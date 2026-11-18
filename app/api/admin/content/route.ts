@@ -1,21 +1,18 @@
-import { readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
 import { NextResponse } from 'next/server'
-import { rejectIfNotAdmin } from '@/lib/admin-guard'
-import { validateContent } from '@/lib/content'
+import { authorizeAdminWrite } from '@/lib/admin-guard'
+import { validateContent, type WeddingContent } from '@/lib/content'
+import { getLiveContent, saveLiveContent } from '@/lib/live-content'
 
 export const dynamic = 'force-dynamic'
 
-const CONTENT_FILE = join(process.cwd(), 'content', 'wedding.json')
-
 export async function GET(request: Request) {
-  const rejected = rejectIfNotAdmin(request)
+  const rejected = await authorizeAdminWrite(request)
   if (rejected) return rejected
-  return NextResponse.json(JSON.parse(await readFile(CONTENT_FILE, 'utf8')))
+  return NextResponse.json(await getLiveContent())
 }
 
 export async function PUT(request: Request) {
-  const rejected = rejectIfNotAdmin(request)
+  const rejected = await authorizeAdminWrite(request)
   if (rejected) return rejected
 
   let data: unknown
@@ -27,6 +24,11 @@ export async function PUT(request: Request) {
   const error = validateContent(data)
   if (error) return NextResponse.json({ error }, { status: 400 })
 
-  await writeFile(CONTENT_FILE, `${JSON.stringify(data, null, 2)}\n`, 'utf8')
+  try {
+    await saveLiveContent(data as WeddingContent)
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Lưu thất bại'
+    return NextResponse.json({ error: message }, { status: 502 })
+  }
   return NextResponse.json({ ok: true })
 }

@@ -2,13 +2,11 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { LogOut } from 'lucide-react'
-import { verifyGuestbookPassword } from '@/lib/guestbook'
+import { ADMIN_PASSWORD_KEY, verifyGuestbookPassword } from '@/lib/guestbook'
 import { GuestbookPanel } from './guestbook-panel'
 import { GuestsPanel } from './guests-panel'
 import { RsvpPanel } from './rsvp-panel'
 import { BTN, errorText } from './shared'
-
-const PASSWORD_KEY = 'guestbook-admin-password'
 
 const TABS = [
   { id: 'xac-nhan', label: 'Xác nhận tham dự' },
@@ -35,11 +33,11 @@ export function AdminDashboard() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(PASSWORD_KEY)
+    const saved = sessionStorage.getItem(ADMIN_PASSWORD_KEY)
     if (!saved) return
     verifyGuestbookPassword(saved)
       .then(() => setPassword(saved))
-      .catch(() => sessionStorage.removeItem(PASSWORD_KEY))
+      .catch(() => sessionStorage.removeItem(ADMIN_PASSWORD_KEY))
   }, [])
 
   const login = async (e: React.FormEvent) => {
@@ -48,7 +46,7 @@ export function AdminDashboard() {
     setError('')
     try {
       await verifyGuestbookPassword(input)
-      sessionStorage.setItem(PASSWORD_KEY, input)
+      sessionStorage.setItem(ADMIN_PASSWORD_KEY, input)
       setPassword(input)
       setInput('')
     } catch (err) {
@@ -59,7 +57,7 @@ export function AdminDashboard() {
   }
 
   const logout = () => {
-    sessionStorage.removeItem(PASSWORD_KEY)
+    sessionStorage.removeItem(ADMIN_PASSWORD_KEY)
     setPassword(null)
   }
 

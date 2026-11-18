@@ -119,7 +119,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
   const cells = meal ? monthCells(meal.year, meal.month) : []
 
   return (
-    <section id="lich-trinh" className="scroll-mt-16 py-16 sm:py-20 md:py-28">
+    <section id="lich-trinh" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="section-frame text-center">
           <SectionHeading>{wedding.intimateMeal.name || 'Bữa cơm thân mật'}</SectionHeading>
@@ -175,22 +175,22 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
           )}
 
           {houses.length > 0 && (
-            <div className={`mx-auto mt-10 grid max-w-2xl items-stretch gap-8 ${houses.length > 1 ? 'sm:grid-cols-[1fr_auto_1fr] sm:gap-6' : ''}`}>
+            <div className={`mx-auto mt-10 grid max-w-2xl items-stretch ${houses.length > 1 ? 'grid-cols-[1fr_auto_1fr] gap-x-2 gap-y-0 sm:gap-x-6' : ''}`}>
               {houses.map((house, index) => {
                 const lines = addressLines(house.address)
                 return (
                   <div key={house.label} className="contents">
                     {index > 0 && (
-                      <div className="flex items-center gap-3 sm:flex-col sm:self-stretch" aria-hidden>
-                        <span className="h-px flex-1 bg-w-line sm:h-auto sm:w-px" />
-                        <PeachBlossom className="h-4 w-4 text-w-line-strong" />
-                        <span className="h-px flex-1 bg-w-line sm:h-auto sm:w-px" />
+                      <div className="flex flex-col items-center self-stretch" aria-hidden>
+                        <span className="w-px flex-1 bg-w-line" />
+                        <PeachBlossom className="my-1.5 h-3.5 w-3.5 text-w-line-strong sm:my-2 sm:h-4 sm:w-4" />
+                        <span className="w-px flex-1 bg-w-line" />
                       </div>
                     )}
-                    <div>
-                      <h3 className="font-sans text-xs font-medium uppercase tracking-[0.24em] text-w-muted">{house.label}</h3>
+                    <div className="min-w-0">
+                      <h3 className="font-sans text-[0.62rem] font-medium uppercase tracking-[0.16em] text-w-muted sm:text-xs sm:tracking-[0.24em]">{house.label}</h3>
                       {lines.length > 0 && (
-                        <p className="mt-2 text-sm leading-relaxed text-w-soft">
+                        <p className="mt-2 text-[0.75rem] leading-relaxed text-w-soft sm:text-sm">
                           {lines.map((line) => (
                             <span key={line} className="block">
                               {line}
@@ -203,9 +203,9 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                           href={house.mapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-w-line px-4 text-xs font-semibold tracking-[0.12em] text-w-strong"
+                          className="mt-4 inline-flex min-h-9 items-center gap-1 rounded-full border border-w-line px-2.5 text-[0.65rem] font-semibold tracking-[0.06em] text-w-strong sm:min-h-10 sm:gap-1.5 sm:px-4 sm:text-xs sm:tracking-[0.12em]"
                         >
-                          <MapPin className="h-3.5 w-3.5" aria-hidden />
+                          <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
                           Chỉ đường
                         </a>
                       )}

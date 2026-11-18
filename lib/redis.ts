@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 
 /**
- * Upstash Redis qua REST API - dùng chung cho sổ lưu bút, xác nhận tham dự và danh sách khách mời.
+ * Upstash Redis qua REST API - sổ lưu bút, xác nhận tham dự, khách mời, và nội dung thiệp khi sửa trên /admin.
  * Cài từ Vercel (Storage → Upstash Redis) sẽ tự có KV_REST_API_URL / KV_REST_API_TOKEN;
  * tạo database trực tiếp trên upstash.com thì dùng UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.
  */

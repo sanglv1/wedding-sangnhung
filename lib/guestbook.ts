@@ -4,6 +4,9 @@
  */
 import { adminHeaders, readJson } from './fetch-json'
 
+/** Cùng một phiên cho /quan-ly và /admin */
+export const ADMIN_PASSWORD_KEY = 'guestbook-admin-password'
+
 export const GUESTBOOK_LIMITS = { name: 60, message: 500 }
 
 export interface GuestbookEntry {

@@ -8,7 +8,6 @@ import { GuestOpenTracker } from '@/components/guest-open-tracker'
 import { GuestbookSection } from '@/components/guestbook-section'
 import { HeroSection } from '@/components/hero-section'
 import { InvitationCover } from '@/components/invitation-cover'
-import { PetalLayer } from '@/components/petal-layer'
 import { RSVPForm } from '@/components/rsvp-form'
 import { ScheduleSection } from '@/components/schedule-section'
 import { Toaster } from '@/components/ui/toast'
@@ -50,7 +49,6 @@ export function WeddingSite({
       {content.opening !== 'trang' && <InvitationCover model={model} />}
       {trackOpens && <GuestOpenTracker />}
       <div className="paper-grain" aria-hidden />
-      <PetalLayer />
       <CardSpotlight />
       <WeddingHeader
         showGuestbook={guestbook}
@@ -78,7 +76,7 @@ export function WeddingSite({
           <GallerySection images={gallery} brand={{ groom: names.groomBrand, bride: names.brideBrand, date: names.dateShort }} />
         )}
         {archived ? (
-          <section className="mx-auto max-w-xl px-4 py-16 text-center">
+          <section className="mx-auto max-w-xl px-4 py-12 text-center sm:py-16 md:py-20">
             <h2 className="font-sans text-3xl font-medium tracking-wide text-w-strong">Thiệp đã khép</h2>
             <p className="mt-3 text-sm leading-7 text-w-soft">
               Đã qua {KEEP_DAYS} ngày sau lễ. Khách vẫn đọc được thiệp, và không gửi thêm xác nhận hay lời chúc.

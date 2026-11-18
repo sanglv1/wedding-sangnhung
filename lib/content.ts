@@ -1,6 +1,8 @@
 import raw from '@/content/wedding.json'
+import { isThemeId } from '@/lib/themes'
 /**
- * Nội dung thiệp cưới - lưu trong content/wedding.json, sửa qua trang /admin (chỉ khi chạy npm run dev)
+ * Nội dung thiệp cưới. Máy local đọc content/wedding.json.
+ * Bản deploy đọc Redis (wedding:content) nếu đã lưu từ /admin, không có thì dùng file này.
  */
 export interface WeddingContent {
   couple: {
@@ -46,6 +48,8 @@ export interface WeddingContent {
   gallery: { src: string; alt: string; caption: string; focus?: string }[]
   gift: Record<'groom' | 'bride', GiftAccount>
   music: { playlist: string[]; volume: number }
+  /** Màu nền mặc định của thiệp, một mã trong lib/themes.ts. Khách vẫn đổi tạm trên máy của họ. */
+  theme?: string
   /** 'trang' bỏ bìa phong bì, vào thẳng thiệp. Thiếu thì hiện bìa. */
   opening?: 'phong-bi' | 'trang'
 }
@@ -133,5 +137,7 @@ export function validateContent(v: unknown): string | null {
     return 'Thông tin mừng cưới không hợp lệ'
   if (!isObject(v.music) || !Array.isArray(v.music.playlist) || typeof v.music.volume !== 'number')
     return 'Nhạc nền không hợp lệ'
+  if (v.theme !== undefined && !isThemeId(v.theme)) return 'Màu nền không hợp lệ'
+  if (v.opening !== undefined && v.opening !== 'phong-bi' && v.opening !== 'trang') return 'Cách mở thiệp không hợp lệ'
   return null
 }

@@ -7,7 +7,7 @@ export function StorySection({ model = CLASSIC_MODEL }: { model?: WeddingModel }
   const LOVE_STORY = model.loveStory
   if (!model.hasStory) return null
   return (
-    <section id="cau-chuyen" className="py-16 sm:py-20 md:py-28 scroll-mt-16">
+    <section id="cau-chuyen" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <Reveal className="section-frame">
           <h2 className="heading-title text-center font-sans text-3xl font-medium tracking-wide text-w-strong md:text-4xl">

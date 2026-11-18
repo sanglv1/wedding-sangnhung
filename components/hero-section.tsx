@@ -9,7 +9,7 @@ function ScrollHint() {
   return (
     <a
       href="#lich-trinh"
-      className="mx-auto mt-6 flex w-fit min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 p-2 text-w-muted transition-colors hover:text-w-strong touch-manipulation sm:mt-8"
+      className="absolute bottom-0 left-1/2 z-10 flex h-11 w-11 -translate-x-1/2 translate-y-1/2 items-center justify-center text-w-muted transition-colors hover:text-w-strong touch-manipulation"
       aria-label="Cuộn xuống phần bữa cơm thân mật"
     >
       <ChevronDown className="h-5 w-5" />
@@ -20,7 +20,7 @@ function ScrollHint() {
 export function HeroSection({ model = CLASSIC_MODEL }: { model?: WeddingModel }) {
   const { wedding: w } = model
   return (
-    <section className="pt-20 pb-10 sm:pt-24 sm:pb-14 md:pt-28">
+    <section className="relative z-[1] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <TiltCard className="hero-card-in">
           <article className="invite-fold grid md:grid-cols-2">

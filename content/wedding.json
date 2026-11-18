@@ -30,7 +30,7 @@
     },
     "brideFamily": {
       "address": "TDP Yên Ngọc, phường Mỹ Hào, tỉnh Hưng Yên",
-      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=TDP%20Y%C3%AAn%20Ng%E1%BB%8Dc%2C%20Ph%C6%B0%E1%BB%9Dng%20M%E1%BB%B9%20H%C3%A0o%2C%20T%E1%BB%89nh%20H%C6%B0ng%20Y%C3%AAn",
+      "mapsUrl": "https://maps.app.goo.gl/h99u72XH4VjBZ4am6?g_st=ic",
       "time": ""
     }
   },
@@ -83,6 +83,24 @@
       "alt": "Ảnh gia đình Lương Sáng và Trần Nhung",
       "caption": "",
       "focus": "50% 35%"
+    },
+    {
+      "src": "/gallery/mau/editorial-1.jpg",
+      "alt": "Đoàn đưa lễ vào nhà",
+      "caption": "",
+      "focus": "50% 30%"
+    },
+    {
+      "src": "/gallery/mau/editorial-3.jpg",
+      "alt": "Họ hàng trong buổi tiệc",
+      "caption": "",
+      "focus": "50% 28%"
+    },
+    {
+      "src": "/gallery/mau/editorial-4.jpg",
+      "alt": "Họ hàng trong buổi tiệc",
+      "caption": "",
+      "focus": "50% 28%"
     }
   ],
   "gift": {
@@ -106,5 +124,6 @@
       "/music/1.mp3"
     ],
     "volume": 0.5
-  }
+  },
+  "theme": "bordeaux"
 }

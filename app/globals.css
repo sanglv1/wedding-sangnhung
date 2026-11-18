@@ -2626,12 +2626,12 @@
   pointer-events: none;
 }
 .wax-root[data-stage='revealing'] .wax-backdrop,
-.wax-root[data-stage='revealing'] .wax-stage {
+.wax-root[data-stage='revealing'] .wax-stage,
+.wax-root[data-stage='revealing'] .wax-palette {
   opacity: 0;
 }
 .wax-root[data-stage='revealing'] .wax-stage {
-  scale: 1.03;
-  filter: blur(5px);
+  transform: translateY(-11vh);
 }
 .wax-wash {
   position: absolute;
@@ -2642,13 +2642,12 @@
   background: radial-gradient(circle at 50% 46%, #fff6e4 0%, rgb(255 246 228 / 0.85) 22%, transparent 62%);
 }
 .wax-root[data-stage='revealing'] .wax-wash {
-  animation: cover-wash 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  opacity: 0;
 }
 .wax-stage {
   transition:
     opacity 0.9s ease,
-    scale 0.9s ease,
-    filter 0.9s ease;
+    transform 0.9s cubic-bezier(0.4, 0.02, 0.2, 1);
 }
 .wax-float {
   animation: wax-float 4.8s ease-in-out infinite;
@@ -2658,6 +2657,7 @@
 }
 .wax-root:not([data-stage='closed']) .wax-envelope {
   overflow: visible;
+  transform: scale(1.035);
 }
 @keyframes wax-float {
   0%,
@@ -2689,6 +2689,7 @@
     inset 0 0 0 1px rgb(232 201 138 / 0.35);
   perspective: 1400px;
   touch-action: manipulation;
+  transition: transform 0.95s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 .wax-envelope:focus-visible {
   outline: 2px solid #f0d48a;
@@ -2703,25 +2704,95 @@
   pointer-events: none;
   z-index: 7;
 }
+.wax-root:not([data-stage='closed']) .wax-body {
+  opacity: 0;
+}
+.wax-pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: inherit;
+}
 .wax-sheet {
   position: absolute;
-  left: 9%;
-  right: 9%;
-  top: 16%;
-  bottom: 8%;
-  z-index: 3;
-  border-radius: 0.35rem;
-  background: linear-gradient(180deg, #fffdf8, #f4e7d4);
-  box-shadow: 0 16px 30px -18px rgb(0 0 0 / 0.45);
-  transform: translateY(115%);
-  opacity: 0;
-  transition:
-    transform 1s cubic-bezier(0.4, 0.02, 0.18, 1) 0.12s,
-    opacity 0.4s ease 0.12s;
+  z-index: 4;
+  inset: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: linear-gradient(180deg, #fffdf8 0%, #f6ead8 100%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    0 14px 28px -18px rgb(60 16 24 / 0.55);
+  transform: translateY(105%);
+  pointer-events: none;
+  container-type: inline-size;
 }
 .wax-root:not([data-stage='closed']) .wax-sheet {
-  transform: translateY(0);
-  opacity: 1;
+  animation: wax-sheet-in 1.05s cubic-bezier(0.45, 0.02, 0.18, 1) 0.28s both;
+}
+@keyframes wax-sheet-in {
+  0% {
+    transform: translateY(105%);
+  }
+  82% {
+    transform: translateY(-1.1%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.wax-pair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 0.6rem 0.85rem;
+  opacity: 0;
+}
+.wax-pair-drift {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-script), cursive;
+  font-size: clamp(1.2rem, 7.2cqi, 1.9rem);
+  line-height: 1.35;
+  white-space: nowrap;
+  color: #7c1f30;
+  text-rendering: geometricPrecision;
+}
+.wax-heart {
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+  font-size: 0.72em;
+  line-height: 1;
+}
+.wax-root:not([data-stage='closed']) .wax-pair {
+  animation: wax-pair-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 1.05s both;
+}
+.wax-root:not([data-stage='closed']) .wax-pair-drift {
+  animation: wax-pair-float 3.8s ease-in-out 1.85s infinite;
+}
+@keyframes wax-pair-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes wax-pair-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 .wax-body {
   position: absolute;
@@ -2733,6 +2804,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  transition: opacity 0.35s ease;
 }
 .wax-invite {
   font-size: 0.68rem;
@@ -2779,33 +2851,48 @@
   right: 0;
   z-index: 5;
   height: 52%;
-  transform-style: preserve-3d;
   transform-origin: center top;
-  transition: transform 1.05s cubic-bezier(0.45, 0.05, 0.2, 1);
+  transition: transform 0.68s cubic-bezier(0.45, 0.05, 0.2, 1);
 }
 .wax-flap-face {
   position: absolute;
   inset: 0;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  backface-visibility: hidden;
 }
-.wax-flap-front {
+/* Tam giác vẽ trên lớp riêng để chữ không bị raster cùng clip-path */
+.wax-flap-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.wax-flap-front::before {
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 28%),
     linear-gradient(180deg, #8d2436 0%, #641424 78%);
 }
 .wax-flap-back {
-  transform: rotateX(180deg);
+  visibility: hidden;
+}
+.wax-flap-back::before {
   background: linear-gradient(180deg, #a33a4a, #6d1828);
 }
 .wax-root:not([data-stage='closed']) .wax-flap {
+  transform-style: preserve-3d;
   transform: rotateX(-168deg);
+}
+.wax-root:not([data-stage='closed']) .wax-flap-face {
+  backface-visibility: hidden;
+}
+.wax-root:not([data-stage='closed']) .wax-flap-back {
+  visibility: visible;
+  transform: rotateX(180deg);
 }
 .wax-welcome {
   position: absolute;
   top: 8%;
   left: 0;
   right: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2831,22 +2918,10 @@
   font-family: var(--font-script), cursive;
   font-size: clamp(3.5rem, 15vw, 4.8rem);
   line-height: 0.9;
-  background: linear-gradient(100deg, #c9a15a 0%, #fff1c4 42%, #e8c98a 58%, #b8893e 100%);
-  background-size: 220% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: wax-gold 5.5s ease-in-out infinite;
-  filter: drop-shadow(0 2px 0 rgb(90 40 10 / 0.25));
-}
-@keyframes wax-gold {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  color: #f4e2b6;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 0 rgb(92 48 14 / 0.28);
 }
 .wax-seal {
   position: absolute;
@@ -2857,9 +2932,9 @@
   translate: -50% -50%;
   filter: drop-shadow(0 10px 12px rgb(0 0 0 / 0.35));
   transition:
-    translate 1s cubic-bezier(0.45, 0.05, 0.2, 1),
-    opacity 0.7s ease,
-    scale 1s ease;
+    translate 0.75s cubic-bezier(0.45, 0.05, 0.2, 1),
+    opacity 0.55s ease,
+    scale 0.75s ease;
   animation: wax-seal 3.2s ease-in-out infinite;
 }
 .wax-seal-svg {

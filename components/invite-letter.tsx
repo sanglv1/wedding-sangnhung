@@ -15,6 +15,13 @@ function hourPhrase(time: string) {
   return `${hour} giờ ${minute}`
 }
 
+function venuePhrase(venue: string) {
+  const text = venue.trim()
+  if (!text) return ''
+  const lower = text.toLocaleLowerCase('vi')
+  return lower.startsWith('tại ') ? `, ${lower}` : `, tại ${lower}`
+}
+
 function Names({ model }: { model: WeddingModel }) {
   const { wedding: w } = model
   return (
@@ -65,7 +72,7 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
         </div>
       )}
       {w.ceremony.lunarDate && <p className="mt-2 text-xs italic invite-muted sm:text-sm">({w.ceremony.lunarDate})</p>}
-      <p className="mt-2 text-sm invite-date">Hôn lễ lúc {when}, tại nhà chú rể</p>
+      <p className="mt-2 text-sm invite-date">Hôn lễ lúc {when}{venuePhrase(w.ceremony.venue)}</p>
 
       <div className="mt-6 w-full max-w-[19.5rem] sm:max-w-md">
         <div className="mx-auto mb-4 h-px w-14 bg-w-line-strong/55" aria-hidden />

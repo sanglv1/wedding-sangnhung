@@ -108,7 +108,7 @@ export function GuestbookSection({ enabled: isGuestbookEnabled }: { enabled: boo
   if (!isGuestbookEnabled && process.env.NODE_ENV !== 'development') return null
 
   return (
-    <section id="loi-chuc" className="py-16 sm:py-20 md:py-28 scroll-mt-16">
+    <section id="loi-chuc" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="section-frame">
           <SectionHeading

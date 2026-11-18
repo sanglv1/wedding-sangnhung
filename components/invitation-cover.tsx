@@ -8,10 +8,10 @@ import { useGuestName, useIsClient } from '@/hooks/use-guest-name'
 import { useWeddingTheme } from '@/hooks/use-wedding-theme'
 import { WEDDING_OPEN_EVENT } from '@/hooks/use-background-music'
 
-/** closed → opening (nắp lật, dấu sáp nhấc) → revealing (tan vào thiệp) → hidden */
+/** closed → opening (nắp lật, giấy trượt trong thiệp, tên viết) → revealing (thiệp nhấc lên) → hidden */
 type Stage = 'closed' | 'opening' | 'revealing' | 'hidden'
 
-const OPEN_MS = 1200
+const OPEN_MS = 3400
 const REVEAL_MS = 900
 
 function WaxSeal({ gradientId }: { gradientId: string }) {
@@ -52,7 +52,6 @@ export function InvitationCover({
   model?: WeddingModel
   allowThemeCycle?: boolean
 }) {
-  void model
   const [stage, setStage] = useState<Stage>('closed')
   const mounted = useIsClient()
   const guestName = useGuestName()
@@ -120,11 +119,21 @@ export function InvitationCover({
           className="wax-envelope"
           aria-label={guestName ? `Mở thiệp cưới. Trân trọng kính mời ${guestName}` : 'Mở thiệp cưới'}
         >
-          <span className="wax-sheet" aria-hidden />
-          <span className="wax-body">
-            <span className="wax-invite">Trân trọng kính mời</span>
-            <span className="wax-guest">{guestLine}</span>
-            <span className="wax-hint">{stage === 'closed' ? 'Chạm để mở' : 'Đang mở'}</span>
+          <span className="wax-pocket">
+            <span className="wax-body">
+              <span className="wax-invite">Trân trọng kính mời</span>
+              <span className="wax-guest">{guestLine}</span>
+              <span className="wax-hint">{stage === 'closed' ? 'Chạm để mở' : 'Đang mở'}</span>
+            </span>
+            <span className="wax-sheet" aria-hidden>
+              <span className="wax-pair">
+                <span className="wax-pair-drift">
+                  <span>{model.wedding.groom}</span>
+                  <span className="wax-heart">❤️</span>
+                  <span>{model.wedding.bride}</span>
+                </span>
+              </span>
+            </span>
           </span>
           <span className="wax-flap" aria-hidden>
             <span className="wax-flap-face wax-flap-front">
@@ -142,6 +151,7 @@ export function InvitationCover({
         </button>
         </div>
       </div>
+
     </div>
   )
 }

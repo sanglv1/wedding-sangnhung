@@ -1,24 +1,25 @@
 import type { Metadata } from 'next'
 import { WeddingSite } from '@/components/wedding-site'
-import { CONTENT } from '@/lib/content'
 import { isGuestbookConfigured } from '@/lib/guestbook-store'
 import { isArchived } from '@/lib/archive'
+import { getLiveContent } from '@/lib/live-content'
 import { shareMetadata } from '@/lib/share-meta'
 
-/** Nội dung là file JSON cố định; tạo lại mỗi giờ để trạng thái "thiệp đã khép" vẫn tự cập nhật sau lễ */
-export const revalidate = 3600
+/** Đọc nội dung mỗi lần mở trang, để lần lưu trên /admin hiện ngay và thiệp vẫn tự khép sau lễ */
+export const dynamic = 'force-dynamic'
 
-export function generateMetadata(): Metadata {
-  return shareMetadata(CONTENT)
+export async function generateMetadata(): Promise<Metadata> {
+  return shareMetadata(await getLiveContent())
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getLiveContent()
   return (
     <WeddingSite
-      content={CONTENT}
-      guestbook={isGuestbookConfigured && !isArchived(CONTENT.event.end)}
+      content={content}
+      guestbook={isGuestbookConfigured && !isArchived(content.event.end)}
       trackOpens={isGuestbookConfigured}
-      archived={isArchived(CONTENT.event.end)}
+      archived={isArchived(content.event.end)}
     />
   )
 }

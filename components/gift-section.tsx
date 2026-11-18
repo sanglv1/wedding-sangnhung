@@ -240,7 +240,7 @@ export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
 
   return (
     <>
-      <section id="hop-mung" className="py-16 sm:py-20 md:py-28 scroll-mt-16">
+      <section id="hop-mung" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="section-frame">
             <SectionHeading
