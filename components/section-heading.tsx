@@ -24,7 +24,9 @@ export function SectionHeading({ children, description, icon }: SectionHeadingPr
         <span className="heading-line heading-line-right" />
       </div>
       {description && (
-        <p className="text-w-muted max-w-md mx-auto text-sm sm:text-base px-2 mt-4">{description}</p>
+        <p className="text-w-muted mx-auto mt-4 max-w-md px-2 text-sm sm:text-base">
+          {description}
+        </p>
       )}
     </Reveal>
   )

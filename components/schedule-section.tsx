@@ -1,91 +1,220 @@
 'use client'
 
-import { CalendarPlus, MapPin } from 'lucide-react'
-import { useGuestSide } from '@/hooks/use-guest-side'
-import { houseFocus } from '@/lib/house-focus'
+import { MapPin } from 'lucide-react'
+import { PeachBlossom } from '@/components/invitation-ornaments'
+import { SectionHeading } from '@/components/section-heading'
 import { CLASSIC_MODEL } from '@/lib/constants'
 import type { WeddingModel } from '@/lib/wedding-model'
-import { Reveal } from './reveal'
-import { SectionHeading } from './section-heading'
 
-const VAGUE_PLACE = /^(tư gia|tại gia)/i
+const WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+const DAY_NAMES = ['CHỦ NHẬT', 'THỨ HAI', 'THỨ BA', 'THỨ TƯ', 'THỨ NĂM', 'THỨ SÁU', 'THỨ BẢY']
 
-function addressFor(model: WeddingModel, focus: ReturnType<typeof houseFocus>) {
-  if (focus?.place && !VAGUE_PLACE.test(focus.place.trim())) return focus.place
-  if (focus?.side === 'bride') return model.familyAddresses.brideFamily.address
-  return model.wedding.ceremony.location || model.familyAddresses.groomFamily.address
+function partyDate(iso: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  if (!match) return null
+  return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) }
+}
+
+function monthCells(year: number, month: number) {
+  const first = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
+  const blanks = (first + 6) % 7
+  const total = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const cells: Array<number | null> = Array.from({ length: blanks }, () => null)
+  for (let day = 1; day <= total; day += 1) cells.push(day)
+  while (cells.length % 7 !== 0) cells.push(null)
+  return cells
+}
+
+function parseMeal(time: string) {
+  const match = /(\d{1,2})\s*h(?:\s*(\d{2}))?[^\d]*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(time)
+  if (!match) return null
+  const hour = Number(match[1])
+  const minute = match[2] ?? '00'
+  const day = Number(match[3])
+  const month = Number(match[4])
+  const year = Number(match[5])
+  const start = new Date(
+    `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${minute}:00+07:00`,
+  )
+  if (Number.isNaN(start.getTime())) return null
+  return {
+    year,
+    month,
+    day,
+    clock: `${String(hour).padStart(2, '0')}:${minute}`,
+    weekday: DAY_NAMES[start.getUTCDay()],
+    start,
+  }
+}
+
+/** Ngày âm của bữa cơm, lùi từ ngày hôn lễ khi bữa cơm đúng hôm trước. */
+function mealLunar(ceremonyLunar: string, ceremonyISO: string, mealStart: Date) {
+  const ceremony = partyDate(ceremonyISO)
+  const match = /ngày\s+(\d+)\s+tháng\s+(\d+)\s+năm\s+(.+)/i.exec(ceremonyLunar)
+  if (!ceremony || !match) return ''
+  const ceremonyUtc = Date.UTC(ceremony.year, ceremony.month - 1, ceremony.day)
+  const mealUtc = Date.UTC(mealStart.getUTCFullYear(), mealStart.getUTCMonth(), mealStart.getUTCDate())
+  const lunarDay = Number(match[1]) - Math.round((ceremonyUtc - mealUtc) / 86_400_000)
+  if (lunarDay < 1) return ''
+  return `Tức ngày ${lunarDay} tháng ${match[2]} năm ${match[3].trim()}`
+}
+
+function calendarStamp(iso: string) {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+}
+
+function mealCalendar(model: WeddingModel) {
+  const meal = model.wedding.intimateMeal
+  const parsed = parseMeal(meal.time)
+  if (!parsed) return ''
+  const end = new Date(parsed.start.getTime() + 3 * 60 * 60 * 1000)
+  const dates = `${calendarStamp(parsed.start.toISOString())}/${calendarStamp(end.toISOString())}`
+  if (!dates.includes('/')) return ''
+  const places = [model.familyAddresses.groomFamily, model.familyAddresses.brideFamily]
+    .filter((house) => house.address)
+    .map((house) => `${house.label}: ${house.address}`)
+    .join('\n')
+  const url = new URL('https://calendar.google.com/calendar/render')
+  url.searchParams.set('action', 'TEMPLATE')
+  url.searchParams.set('text', `${meal.name} - ${model.wedding.groomShort} & ${model.wedding.brideShort}`)
+  url.searchParams.set('dates', dates)
+  url.searchParams.set('ctz', 'Asia/Ho_Chi_Minh')
+  url.searchParams.set('details', [meal.time, places].filter(Boolean).join('\n'))
+  return url.toString()
+}
+
+function addressLines(address: string) {
+  return address
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
+
+function HeartDay({ day }: { day: number }) {
+  return (
+    <span className="relative inline-flex h-7 w-7 items-center justify-center">
+      <svg viewBox="0 0 24 22" className="absolute inset-0 h-full w-full text-w-line-strong" aria-hidden>
+        <path
+          fill="currentColor"
+          d="M12 20.5s-6.4-4.1-8.9-7.8C1.2 10.2 1.6 6.8 4.2 5.4 6.3 4.3 8.3 5 12 8.1 15.7 5 17.7 4.3 19.8 5.4c2.6 1.4 3 4.8 1.1 7.3-2.5 3.7-8.9 7.8-8.9 7.8z"
+        />
+      </svg>
+      <span className="relative text-[0.68rem] font-semibold text-w-bg">{day}</span>
+    </span>
+  )
 }
 
 export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingModel }) {
   const wedding = model.wedding
-  const focus = houseFocus(model, useGuestSide())
-  const address = addressFor(model, focus)
-  const direction = focus?.mapsUrl || model.familyAddresses.groomFamily.mapsUrl
-  const hasSheet = Boolean(wedding.ceremony.time || wedding.date || wedding.intimateMeal.time || address)
-  if (!hasSheet) return null
+  const meal = parseMeal(wedding.intimateMeal.time)
+  const houses = [model.familyAddresses.groomFamily, model.familyAddresses.brideFamily].filter(
+    (house) => house.address || house.mapsUrl,
+  )
+  if (!meal && houses.length === 0) return null
+
+  const lunar = meal ? mealLunar(wedding.ceremony.lunarDate, wedding.startISO, meal.start) : ''
+  const calendar = meal ? mealCalendar(model) : ''
+  const cells = meal ? monthCells(meal.year, meal.month) : []
 
   return (
     <section id="lich-trinh" className="scroll-mt-16 py-16 sm:py-20 md:py-28">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="section-frame">
-          <SectionHeading>Lịch trình</SectionHeading>
-          <Reveal className="ceremony-card rounded-2xl px-6 py-8 text-center sm:px-10 sm:py-10">
-            <div>
-              <h3 className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-w-label">{wedding.ceremony.name}</h3>
-              {wedding.ceremony.time && <p className="mt-2 font-sans text-lg text-w-strong sm:text-xl">{wedding.ceremony.time}</p>}
-              {wedding.date && <p className="mt-1 text-sm text-w-soft">{wedding.date}</p>}
-              {wedding.ceremony.lunarDate && <p className="ceremony-lunar mt-1 text-sm italic">({wedding.ceremony.lunarDate})</p>}
-            </div>
+        <div className="section-frame text-center">
+          <SectionHeading>{wedding.intimateMeal.name || 'Bữa cơm thân mật'}</SectionHeading>
 
-            {wedding.intimateMeal.time && (
-              <>
-                <div className="mx-auto my-6 h-px w-16 bg-w-line" aria-hidden />
-                <div>
-                  <h3 className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-w-label">{wedding.intimateMeal.name}</h3>
-                  <p className="mt-2 font-sans text-lg text-w-strong sm:text-xl">{wedding.intimateMeal.time}</p>
-                </div>
-              </>
-            )}
-
-            {address && (
-              <>
-                <div className="mx-auto my-6 h-px w-16 bg-w-line" aria-hidden />
-                <div>
-                  <h3 className="font-sans text-xs font-medium uppercase tracking-[0.22em] text-w-label">
-                    {focus ? `Địa chỉ ${focus.label.toLocaleLowerCase('vi')}` : 'Địa chỉ'}
-                  </h3>
-                  <p className="mx-auto mt-2 max-w-md text-base leading-relaxed text-w-strong">{address}</p>
-                </div>
-              </>
-            )}
-
-            {(direction || wedding.addToCalendarUrl) && (
-              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                {direction && (
-                  <a
-                    href={direction}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ceremony-btn inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition"
-                  >
-                    <MapPin className="h-4 w-4" aria-hidden />
-                    Chỉ đường
-                  </a>
-                )}
-                {wedding.addToCalendarUrl && (
-                  <a
-                    href={wedding.addToCalendarUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ceremony-btn inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition"
-                  >
-                    <CalendarPlus className="h-4 w-4" aria-hidden />
-                    Thêm lịch
-                  </a>
-                )}
+          {meal && (
+            <>
+              <p className="text-sm tracking-[0.28em] text-w-muted">
+                {meal.clock}
+                <span className="mx-3 text-w-line-strong">·</span>
+                {meal.weekday}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-4 text-w-strong">
+                <span className="text-6xl font-medium leading-none tabular-nums text-w-strong sm:text-7xl">{meal.day}</span>
+                <span className="h-14 w-px bg-w-line" aria-hidden />
+                <span className="text-left text-sm leading-tight tracking-[0.18em]">
+                  THÁNG {String(meal.month).padStart(2, '0')}
+                  <br />
+                  {meal.year}
+                </span>
               </div>
-            )}
-          </Reveal>
+              {lunar && <p className="mt-3 text-sm italic text-w-soft">({lunar})</p>}
+
+              <div className="mx-auto mt-8 max-w-sm">
+                <p className="font-serif text-3xl text-w-strong">Tháng {meal.month} / {meal.year}</p>
+                <div className="mx-auto mt-2 h-px w-24 bg-w-line" />
+                <div className="mt-3 grid grid-cols-7 text-[0.68rem] tracking-[0.14em] text-w-muted">
+                  {WEEKDAYS.map((name) => (
+                    <span key={name} className="py-1.5">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 text-[0.95rem] text-w-text">
+                  {cells.map((day, index) => (
+                    <span key={`${day ?? 'x'}-${index}`} className="flex h-9 items-center justify-center">
+                      {day === meal.day ? <HeartDay day={day} /> : day}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {calendar && (
+                <a
+                  href={calendar}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex text-sm tracking-wide text-w-strong underline decoration-w-line-strong underline-offset-4"
+                >
+                  Thêm vào lịch
+                </a>
+              )}
+            </>
+          )}
+
+          {houses.length > 0 && (
+            <div className={`mx-auto mt-10 grid max-w-2xl items-stretch gap-8 ${houses.length > 1 ? 'sm:grid-cols-[1fr_auto_1fr] sm:gap-6' : ''}`}>
+              {houses.map((house, index) => {
+                const lines = addressLines(house.address)
+                return (
+                  <div key={house.label} className="contents">
+                    {index > 0 && (
+                      <div className="flex items-center gap-3 sm:flex-col sm:self-stretch" aria-hidden>
+                        <span className="h-px flex-1 bg-w-line sm:h-auto sm:w-px" />
+                        <PeachBlossom className="h-4 w-4 text-w-line-strong" />
+                        <span className="h-px flex-1 bg-w-line sm:h-auto sm:w-px" />
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-sans text-xs font-medium uppercase tracking-[0.24em] text-w-muted">{house.label}</h3>
+                      {lines.length > 0 && (
+                        <p className="mt-2 text-sm leading-relaxed text-w-soft">
+                          {lines.map((line) => (
+                            <span key={line} className="block">
+                              {line}
+                            </span>
+                          ))}
+                        </p>
+                      )}
+                      {house.mapsUrl && (
+                        <a
+                          href={house.mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-w-line px-4 text-xs font-semibold tracking-[0.12em] text-w-strong"
+                        >
+                          <MapPin className="h-3.5 w-3.5" aria-hidden />
+                          Chỉ đường
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </section>

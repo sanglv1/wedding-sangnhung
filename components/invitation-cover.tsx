@@ -1,40 +1,47 @@
 'use client'
 
-import { useEffect, useState, type CSSProperties } from 'react'
-import { Heart, Palette } from 'lucide-react'
-import { HouseLine } from '@/components/house-line'
-import { OrnamentDivider, PeachBlossom } from '@/components/invitation-ornaments'
+import { useEffect, useId, useState } from 'react'
+import { Palette } from 'lucide-react'
 import { CLASSIC_MODEL } from '@/lib/constants'
 import type { WeddingModel } from '@/lib/wedding-model'
-import { useGuestName } from '@/hooks/use-guest-name'
+import { useGuestName, useIsClient } from '@/hooks/use-guest-name'
 import { useWeddingTheme } from '@/hooks/use-wedding-theme'
 import { WEDDING_OPEN_EVENT } from '@/hooks/use-background-music'
-/** closed → opening (dấu sáp tách, nắp lật) → revealing (chớp sáng, hai cánh cửa mở) → hidden */
+
+/** closed → opening (nắp lật, dấu sáp nhấc) → revealing (tan vào thiệp) → hidden */
 type Stage = 'closed' | 'opening' | 'revealing' | 'hidden'
 
-const OPEN_MS = 1150
-const REVEAL_MS = 1500
+const OPEN_MS = 1200
+const REVEAL_MS = 900
 
-/** Màu dấu sáp, tim và chớp sáng khi mở thiệp */
-const SEAL = { seal: '#e8c88a', sealDeep: '#b8860b', heart: '#5a1018', petal: '#e8c88a', flash: '#fff6e4' }
-
-const SEAL_STYLE = {
-  '--open-seal': SEAL.seal,
-  '--open-seal-deep': SEAL.sealDeep,
-  '--open-heart': SEAL.heart,
-  '--open-petal': SEAL.petal,
-  '--open-flash': SEAL.flash,
-} as CSSProperties
-
-const loadConfetti = () => import('@/lib/confetti')
-
-function SealPiece({ part }: { part: 'whole' | 'left' | 'right' }) {
+function WaxSeal({ gradientId }: { gradientId: string }) {
+  const petals = [0, 60, 120, 180, 240, 300]
   return (
-    <div
-      className={`cover-seal cover-seal-piece cover-seal-${part} absolute inset-0 rounded-full flex items-center justify-center border-4`}
-    >
-      <Heart className="w-7 h-7 sm:w-8 sm:h-8 fill-current drop-shadow-sm" aria-hidden />
-    </div>
+    <svg className="wax-seal-svg" viewBox="0 0 200 200" aria-hidden>
+      <defs>
+        <radialGradient id={gradientId} cx="36%" cy="30%" r="72%">
+          <stop offset="0%" stopColor="#fff1cc" />
+          <stop offset="38%" stopColor="#e7c56a" />
+          <stop offset="100%" stopColor="#9a6a2c" />
+        </radialGradient>
+        <filter id={`${gradientId}-edge`} x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="4" />
+        </filter>
+      </defs>
+      <circle cx="100" cy="104" r="70" fill="rgb(0 0 0 / 0.28)" />
+      <circle cx="100" cy="100" r="76" fill={`url(#${gradientId})`} filter={`url(#${gradientId}-edge)`} />
+      <circle cx="100" cy="100" r="64" fill="none" stroke="#fff6df" strokeOpacity="0.45" strokeWidth="1.5" />
+      <g transform="translate(100 102)" fill="#f6e2a8" stroke="#7c5418" strokeWidth="1.4">
+        {petals.map((turn) => (
+          <ellipse key={turn} rx="15" ry="27" transform={`rotate(${turn}) translate(0 -24)`} />
+        ))}
+        <ellipse rx="11" ry="20" transform="rotate(-28) translate(34 8)" fill="#e7c27a" />
+        <ellipse rx="11" ry="20" transform="rotate(28) translate(-34 8)" fill="#e7c27a" />
+        <circle r="13" fill="#f8e7b4" />
+        <circle r="5.5" fill="#c4923a" stroke="none" />
+      </g>
+    </svg>
   )
 }
 
@@ -45,15 +52,12 @@ export function InvitationCover({
   model?: WeddingModel
   allowThemeCycle?: boolean
 }) {
-  const WEDDING = model.wedding
-  const ANNOUNCEMENT = model.announcement
+  void model
   const [stage, setStage] = useState<Stage>('closed')
+  const mounted = useIsClient()
   const guestName = useGuestName()
   const { themeName, cycleTheme } = useWeddingTheme()
-
-  useEffect(() => {
-    loadConfetti()
-  }, [])
+  const sealId = useId().replace(/:/g, '')
 
   useEffect(() => {
     if (stage === 'hidden') return
@@ -67,14 +71,12 @@ export function InvitationCover({
   const handleOpen = () => {
     if (stage !== 'closed') return
     setStage('opening')
-    // Phát nhạc phải nằm ngay trong thao tác bấm, trình duyệt mới cho phép
     window.dispatchEvent(new Event(WEDDING_OPEN_EVENT))
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     setTimeout(() => {
       setStage('revealing')
       document.documentElement.dataset.opened = 'true'
-      loadConfetti().then((m) => m.fireOpeningCelebration([SEAL.seal, SEAL.sealDeep, SEAL.petal, SEAL.flash, '#fffaf3']))
       setTimeout(() => {
         setStage('hidden')
         window.scrollTo({ top: 0 })
@@ -84,106 +86,60 @@ export function InvitationCover({
 
   if (stage === 'hidden') return null
 
-  const isOpening = stage !== 'closed'
-  const dateFormatted = WEDDING.dateShort.replace(/\//g, '.')
-  const inviteLine = 'Trân trọng kính mời'
-  const announcementIsInvite = ANNOUNCEMENT.trim().toLocaleLowerCase('vi') === inviteLine.toLocaleLowerCase('vi')
+  const guestLine = guestName || (mounted ? 'Quý khách' : '\u00a0')
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="cover-title"
+      aria-label="Thiệp mời"
       data-stage={stage}
-      data-effect="phong-bi"
-      style={SEAL_STYLE}
-      className="cover-root fixed inset-0 z-[100]"
+      className="wax-root fixed inset-0 z-[100]"
     >
-      <div className="cover-door cover-door-left" aria-hidden />
-      <div className="cover-door cover-door-right" aria-hidden />
-      <div className="cover-flash" aria-hidden />
+      <div className="wax-backdrop" aria-hidden />
+      <div className="wax-wash" aria-hidden />
 
       {allowThemeCycle && (
         <button
           type="button"
           onClick={cycleTheme}
-          className="cover-palette absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white shadow-lg border border-white/50 flex items-center justify-center text-stone-600 hover:text-stone-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          className="wax-palette absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/90 text-stone-600 shadow-lg transition-all hover:bg-white hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:top-6 sm:right-6 sm:h-12 sm:w-12"
           aria-label={`Đổi màu nền (hiện: ${themeName})`}
           title={`Đổi màu (${themeName})`}
         >
-          <Palette className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Palette className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
       )}
 
-      <div className="absolute inset-0 overflow-y-auto">
-        <div className="min-h-full flex items-center justify-center p-4">
-          <div className="cover-card-wrap perspective-[1200px] w-full max-w-[420px]">
-            <div className="envelope-card relative w-full">
-              <div className="cover-gold-frame absolute -inset-[1px] rounded-[2rem] opacity-90" />
-              <div className="cover-inner-border absolute -inset-[2px] rounded-[1.5rem] m-[3px]" />
-
-              <div className="relative w-full h-full rounded-[1.25rem] overflow-hidden">
-                <div className="cover-surface relative pt-[7.5rem] sm:pt-[8.75rem] pb-10 px-8 sm:px-12 text-center rounded-b-[1.25rem]">
-                  <div className="cover-letter cover-stagger">
-                    <p className="cover-sub text-[11px] sm:text-xs uppercase tracking-[0.3em] mb-4 font-light leading-relaxed">
-                      {ANNOUNCEMENT}
-                    </p>
-                    <h2
-                      id="cover-title"
-                      className="cover-text font-serif text-[1.75rem] sm:text-4xl tracking-wide mb-6 flex flex-nowrap items-center justify-center gap-x-2 sm:gap-x-3"
-                    >
-                      <span className="whitespace-nowrap drop-shadow-sm">{WEDDING.groomShort}</span>
-                      <PeachBlossom leaves className="cover-accent w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                      <span className="sr-only">và</span>
-                      <span className="whitespace-nowrap drop-shadow-sm">{WEDDING.brideShort}</span>
-                    </h2>
-
-                    <OrnamentDivider className="mb-6 cover-accent" />
-
-                    <p className={`cover-date font-sans text-xl sm:text-2xl tracking-[0.2em] ${guestName || !announcementIsInvite ? 'mb-2' : 'mb-10'}`}>
-                      {dateFormatted}
-                    </p>
-
-                    {guestName ? (
-                      <div className="mb-8">
-                        {!announcementIsInvite && (
-                          <p className="cover-date text-xs uppercase tracking-[0.3em] font-light mb-2">{inviteLine}</p>
-                        )}
-                        <p className="cover-text font-serif text-2xl sm:text-3xl break-words">{guestName}</p>
-                        <HouseLine model={model} variant="cover" />
-                      </div>
-                    ) : (
-                      !announcementIsInvite && (
-                        <p className="cover-date text-xs uppercase tracking-[0.35em] mb-10 font-light">{inviteLine}</p>
-                      )
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleOpen}
-                      disabled={isOpening}
-                      autoFocus
-                      className="cover-btn relative overflow-hidden w-full py-4 font-bold text-sm uppercase tracking-[0.25em] rounded-xl shadow-lg active:scale-[0.98] transition-all duration-300 disabled:opacity-90 disabled:cursor-not-allowed border focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                    >
-                      Mở thiệp cưới
-                    </button>
-                  </div>
-                </div>
-
-                <div className="envelope-flap cover-surface absolute top-0 left-0 right-0 h-20 sm:h-24 rounded-t-[1.25rem] rounded-b-[2rem]" />
-              </div>
-
-              <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 -translate-y-[42%] z-10" aria-hidden>
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-                  <div className="cover-seal-glow absolute -inset-6 rounded-full opacity-60" />
-                  <span className="cover-seal-ring absolute inset-0 rounded-full" />
-                  <SealPiece part="left" />
-                  <SealPiece part="right" />
-                  <SealPiece part="whole" />
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="wax-stage absolute inset-0 flex items-center justify-center p-4">
+        <div className="wax-float">
+        <button
+          type="button"
+          onClick={handleOpen}
+          autoFocus
+          className="wax-envelope"
+          aria-label={guestName ? `Mở thiệp cưới. Trân trọng kính mời ${guestName}` : 'Mở thiệp cưới'}
+        >
+          <span className="wax-sheet" aria-hidden />
+          <span className="wax-body">
+            <span className="wax-invite">Trân trọng kính mời</span>
+            <span className="wax-guest">{guestLine}</span>
+            <span className="wax-hint">{stage === 'closed' ? 'Chạm để mở' : 'Đang mở'}</span>
+          </span>
+          <span className="wax-flap" aria-hidden>
+            <span className="wax-flap-face wax-flap-front">
+              <span className="wax-welcome">
+                <span className="wax-kicker">Welcome</span>
+                <span className="wax-to">to</span>
+                <span className="wax-word">Wedding</span>
+              </span>
+            </span>
+            <span className="wax-flap-face wax-flap-back" />
+          </span>
+          <span className="wax-seal">
+            <WaxSeal gradientId={sealId} />
+          </span>
+        </button>
         </div>
       </div>
     </div>

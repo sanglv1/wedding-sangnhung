@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import Image from 'next/image'
-import { Check, Copy, Download, Gift, Hand, X } from 'lucide-react'
+import { Check, Copy, Download, Gift, X } from 'lucide-react'
 import { CLASSIC_MODEL } from '@/lib/constants'
 import type { WeddingModel } from '@/lib/wedding-model'
 import { isOptimizableImage } from '@/lib/media-src'
@@ -14,8 +14,6 @@ import { SectionHeading } from './section-heading'
 type GiftAccount = WeddingModel['gift']['groom']
 type GiftSide = { key: 'groom' | 'bride'; role: 'Chú Rể' | 'Cô Dâu'; account: GiftAccount; fullName: string; shortName: string }
 
-/** Cho khách thấy nắp mở ra một nhịp rồi mới bật hộp thoại */
-const PRESS_DURATION = 650
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)'
 
 async function copyText(text: string, host: HTMLElement) {
@@ -191,103 +189,18 @@ function GiftCards({ sides, initial, closeButton }: { sides: GiftSide[]; initial
   )
 }
 
-/** Mặt quà chạy hiệu ứng mở nắp một nhịp, rồi mới gọi onOpen */
-function usePress(onOpen: (rect?: DOMRect) => void) {
-  const [pressed, setPressed] = useState(false)
-  const ref = useRef<HTMLButtonElement>(null)
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  useEffect(() => () => clearTimeout(timer.current), [])
-
-  const press = () => {
-    if (pressed) return
-    const rect = ref.current?.getBoundingClientRect()
-    if (window.matchMedia(REDUCED_MOTION).matches) {
-      onOpen()
-      return
-    }
-    setPressed(true)
-    timer.current = setTimeout(() => {
-      setPressed(false)
-      onOpen(rect)
-    }, PRESS_DURATION)
-  }
-
-  return { pressed, ref, press }
-}
-
-function Hint({ text, hidden }: { text: string; hidden: boolean }) {
-  if (!text) return null
-  return (
-    <p className={`mt-5 inline-flex items-center gap-1.5 text-sm text-w-muted transition-opacity ${hidden ? 'opacity-0' : ''}`}>
-      <Hand className="w-4 h-4 gift-hint-icon" aria-hidden />
-      {text}
-    </p>
-  )
-}
-
 function sideHasDetail(account: GiftAccount) {
   return Boolean(account.qrPath || account.accountNumber || account.bankName || account.accountName)
-}
-
-function WeddingBox() {
-  const rawId = useId()
-  const id = `wbox-${rawId.replace(/:/g, '')}`
-  return (
-    <svg className="wbox-svg" viewBox="0 44 200 152" aria-hidden>
-      <defs>
-        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#c9303f" />
-          <stop offset="1" stopColor="#7a1222" />
-        </linearGradient>
-        <linearGradient id={`${id}-lid`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e0485a" />
-          <stop offset="1" stopColor="#a51d2e" />
-        </linearGradient>
-        <linearGradient id={`${id}-gold`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#b3812c" />
-          <stop offset="0.5" stopColor="#fbe7ad" />
-          <stop offset="1" stopColor="#b3812c" />
-        </linearGradient>
-        <radialGradient id={`${id}-seal`} cx="0.35" cy="0.3">
-          <stop offset="0" stopColor="#fdeaa6" />
-          <stop offset="0.6" stopColor="#d4a574" />
-          <stop offset="1" stopColor="#a16207" />
-        </radialGradient>
-        <radialGradient id={`${id}-glow`}>
-          <stop offset="0" stopColor="#ffe7a3" stopOpacity="0.85" />
-          <stop offset="1" stopColor="#ffe7a3" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="100" cy="188" rx="66" ry="6" fill="rgb(0 0 0 / 0.35)" />
-      <ellipse className="wbox-glow" cx="100" cy="92" rx="86" ry="64" fill={`url(#${id}-glow)`} />
-      <rect x="34" y="96" width="132" height="88" rx="10" fill={`url(#${id}-body)`} />
-      <rect x="34" y="96" width="132" height="9" fill="rgb(0 0 0 / 0.2)" />
-      <rect x="91" y="96" width="18" height="88" fill={`url(#${id}-gold)`} />
-      <circle cx="100" cy="142" r="17" fill={`url(#${id}-seal)`} stroke="#fff3cc" strokeOpacity="0.6" strokeWidth="1.5" />
-      <text x="100" y="149" textAnchor="middle" fontSize="19" fontWeight="700" fill="#7f1d1d">
-        囍
-      </text>
-      <g className="wbox-lid">
-        <path d="M100 74 C86 52 60 50 64 68 C66 78 88 78 100 74 Z" fill={`url(#${id}-gold)`} />
-        <path d="M100 74 C114 52 140 50 136 68 C134 78 112 78 100 74 Z" fill={`url(#${id}-gold)`} />
-        <rect x="26" y="72" width="148" height="28" rx="7" fill={`url(#${id}-lid)`} />
-        <rect x="26" y="95" width="148" height="5" rx="2.5" fill="#d4a574" />
-        <rect x="90" y="72" width="20" height="28" fill={`url(#${id}-gold)`} />
-        <circle cx="100" cy="72" r="7.5" fill="#e9c77d" stroke="#a16207" strokeWidth="1" />
-      </g>
-    </svg>
-  )
 }
 
 function RedEnvelope({ side, onOpen }: { side: GiftSide; onOpen: (rect?: DOMRect) => void }) {
   return (
     <button
       type="button"
-      onClick={() => onOpen()}
+      onClick={(event) => onOpen(event.currentTarget.getBoundingClientRect())}
       className="wenv"
       aria-haspopup="dialog"
-      aria-label={`Mở phong bì mừng cưới ${side.role.toLocaleLowerCase('vi')} ${side.fullName}`}
+      aria-label={`Mở hộp mừng cưới ${side.role.toLocaleLowerCase('vi')} ${side.fullName}`}
     >
       <span className="wenv-flap" aria-hidden />
       <span className="wenv-seal" aria-hidden>
@@ -304,64 +217,6 @@ function burstAt(rect?: DOMRect) {
   const x = (rect.left + rect.width / 2) / window.innerWidth
   const y = (rect.top + rect.height * 0.35) / window.innerHeight
   import('@/lib/confetti').then(({ fireGiftBurst }) => fireGiftBurst(x, y))
-}
-
-/** Hộp quà đóng; mở nắp thì hai phong bì của chú rể, cô dâu bay lên thay chỗ */
-function UnboxGift({
-  sides,
-  who,
-  onOpenSide,
-}: {
-  sides: GiftSide[]
-  who: string
-  onOpenSide: (index: number) => (rect?: DOMRect) => void
-}) {
-  const [unboxed, setUnboxed] = useState(false)
-  const envelopesRef = useRef<HTMLDivElement>(null)
-  const { pressed, ref, press } = usePress((rect) => {
-    setUnboxed(true)
-    burstAt(rect)
-  })
-
-  // Nút hộp quà biến mất sau khi mở, chuyển focus sang phong bì đầu để bàn phím không bị lạc về đầu trang
-  useEffect(() => {
-    if (unboxed) envelopesRef.current?.querySelector('button')?.focus({ preventScroll: true })
-  }, [unboxed])
-
-  if (!unboxed) {
-    return (
-      <div className="wbox-stage">
-        <button
-          ref={ref}
-          type="button"
-          onClick={press}
-          className={`gx-hit wbox ${pressed ? 'is-open' : ''}`}
-          aria-label="Mở hộp quà để lấy phong bì mừng cưới của chú rể và cô dâu"
-        >
-          <WeddingBox />
-          <span className="wbox-who">{who}</span>
-        </button>
-        <Hint text="Chạm hộp quà để mở" hidden={pressed} />
-      </div>
-    )
-  }
-
-  return (
-    <div className="wbox-stage">
-      <div ref={envelopesRef} className={`grid w-full max-w-[22rem] gap-4 sm:gap-6 ${sides.length > 1 ? 'grid-cols-2' : 'max-w-[11rem]'}`}>
-        {sides.map((side, i) => (
-          <div
-            key={side.key}
-            className="gift-unbox-rise flex justify-center"
-            style={{ '--rise-delay': `${i * 140}ms` } as React.CSSProperties}
-          >
-            <RedEnvelope side={side} onOpen={onOpenSide(i)} />
-          </div>
-        ))}
-      </div>
-      <Hint text="Chọn phong bì để xem mã QR" hidden={false} />
-    </div>
-  )
 }
 
 export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel }) {
@@ -396,11 +251,14 @@ export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
             </SectionHeading>
 
             <Reveal delay={120} className="flex flex-col items-center">
-              <UnboxGift
-                sides={sides}
-                who={`${WEDDING.groomBrand || WEDDING.groomShort} & ${WEDDING.brideBrand || WEDDING.brideShort}`}
-                onOpenSide={open}
-              />
+              <div className={`grid w-full gap-4 sm:gap-6 ${sides.length > 1 ? 'max-w-[22rem] grid-cols-2' : 'max-w-[11rem]'}`}>
+                {sides.map((side, i) => (
+                  <div key={side.key} className="wenv-float flex justify-center" style={{ animationDelay: `${i * 0.45}s` }}>
+                    <RedEnvelope side={side} onOpen={open(i)} />
+                  </div>
+                ))}
+              </div>
+              <p className="mt-5 text-sm text-w-muted">Chọn hộp để xem mã QR</p>
             </Reveal>
           </div>
         </div>

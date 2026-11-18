@@ -8,7 +8,7 @@ import { WEDDING } from '@/lib/constants'
 const NAV_LINKS = [
   { href: '#cau-chuyen', label: 'Câu chuyện', key: 'story' },
   { href: '#gia-dinh', label: 'Gia đình', key: 'family' },
-  { href: '#lich-trinh', label: 'Lịch trình', key: 'schedule' },
+  { href: '#lich-trinh', label: 'Bữa cơm', key: 'schedule' },
   { href: '#khoanh-khac', label: 'Khoảnh khắc', key: 'gallery' },
   { href: '#xac-nhan', label: 'Xác nhận', key: 'rsvp' },
   { href: '#loi-chuc', label: 'Lời chúc', key: 'guestbook' },

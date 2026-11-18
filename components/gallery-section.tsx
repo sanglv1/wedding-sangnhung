@@ -22,7 +22,7 @@ export function GallerySection({
       <section id="khoanh-khac" className="scroll-mt-16 py-16 sm:py-20 md:py-28">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <div className="section-frame">
-            <SectionHeading>Khoảnh khắc</SectionHeading>
+            <SectionHeading description="Những khoảnh khắc của chúng mình">Khoảnh khắc</SectionHeading>
             <div className="grid gap-6 md:grid-cols-2 md:gap-8">
               {images.map((image, i) => (
                 <Reveal key={image.src + i} delay={i * 80}>

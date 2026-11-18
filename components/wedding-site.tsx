@@ -11,7 +11,6 @@ import { InvitationCover } from '@/components/invitation-cover'
 import { PetalLayer } from '@/components/petal-layer'
 import { RSVPForm } from '@/components/rsvp-form'
 import { ScheduleSection } from '@/components/schedule-section'
-import { StorySection } from '@/components/story-section'
 import { Toaster } from '@/components/ui/toast'
 import { WeddingFooter } from '@/components/wedding-footer'
 import { WeddingHeader } from '@/components/wedding-header'
@@ -56,7 +55,7 @@ export function WeddingSite({
       <WeddingHeader
         showGuestbook={guestbook}
         sections={{
-          story: model.hasStory,
+          story: false,
           family: false,
           schedule: Boolean(
             names.date || names.ceremony.time || names.ceremony.venue || names.intimateMeal.time || names.intimateMeal.venue
@@ -74,7 +73,6 @@ export function WeddingSite({
       />
       <main className="relative z-[1] min-h-screen overflow-x-hidden">
         <HeroSection model={model} />
-        <StorySection model={model} />
         <ScheduleSection model={model} />
         {gallery.length > 0 && (
           <GallerySection images={gallery} brand={{ groom: names.groomBrand, bride: names.brideBrand, date: names.dateShort }} />
