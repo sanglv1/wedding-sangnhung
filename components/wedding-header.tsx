@@ -102,7 +102,7 @@ export function WeddingHeader({
       <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
         <a
           href="#"
-          className="font-serif text-xl sm:text-2xl font-semibold tracking-wide truncate max-w-[60vw] sm:max-w-none flex items-center flex-nowrap gap-x-1.5"
+          className="font-serif text-xl tracking-wide sm:text-2xl truncate max-w-[60vw] sm:max-w-none flex items-center flex-nowrap gap-x-1.5"
           aria-label={`${groomShort} và ${brideShort} - về đầu trang`}
         >
           <span className="whitespace-nowrap">{groomBrand}</span>

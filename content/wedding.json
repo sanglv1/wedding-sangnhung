@@ -8,70 +8,103 @@
     "brideBrand": "Nhung"
   },
   "event": {
-    "start": "2027-01-23T14:00",
-    "end": "2027-01-23T18:00",
-    "lunarDate": "Tức ngày 16 tháng 12 năm Bính Ngọ",
+    "start": "2026-12-20T10:30",
+    "end": "2026-12-20T12:00",
+    "lunarDate": "Tức ngày 12 tháng 11 năm Bính Ngọ",
     "lunarYear": "Bính Ngọ",
     "ceremonyName": "Lễ thành hôn",
-    "ceremonyTime": "14:00 - 15:30",
+    "ceremonyTime": "11:00 - 12:30",
     "ceremonyVenue": "Tại gia",
-    "location": "",
+    "location": "Thôn Tất Viên, xã Tân Hưng, tỉnh Hưng Yên",
     "mealName": "Bữa cơm thân mật",
-    "mealTime": "17:00 - 18:00",
+    "mealTime": "Từ 16h ngày 19/12/2026",
     "mealVenue": "Tại gia",
     "venueLat": 0,
     "venueLng": 0
   },
   "addresses": {
     "groomFamily": {
-      "address": "Tư gia nhà trai",
-      "mapsUrl": ""
+      "address": "Thôn Tất Viên, xã Tân Hưng, tỉnh Hưng Yên",
+      "mapsUrl": "https://www.google.com/maps/dir//M462%2B3W6+ch%E1%BB%A3+t%E1%BA%A5t+vi%C3%AAn+th%E1%BB%A7+s%E1%BB%B9,+Khu+%C4%91%C3%B4+th%E1%BB%8B+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+Ph%E1%BB%91+Hi%E1%BA%BFn,+T%C3%A2n+H%C6%B0ng,+H%C6%B0ng+Y%C3%AAn,+Vi%E1%BB%87t+Nam/@20.6622862,106.0998181,1017m/data=!3m1!1e3!4m18!1m8!3m7!1s0x3135c100427c9029:0x54c06adf7d06e1cf!2zY2jhu6MgdOG6pXQgdmnDqm4gdGjhu6cgc-G7uQ!8m2!3d20.6601602!4d106.1022794!15sCjRDaOG7oyBU4bqldCBWacOqbiwgeMOjIFTDom4gSMawbmcsIHThu4luaCBIxrBuZyBZw6pukgEGbWFya2V04AEA!16s%2Fg%2F11lcv0s57v!4m8!1m0!1m5!1m1!1s0x3135c100427c9029:0x54c06adf7d06e1cf!2m2!1d106.1022794!2d20.6601602!3e0?entry=ttu&g_ep=EgoyMDI2MTExNi4wIKXMDSoASAFQAw%3D%3D",
+      "time": ""
     },
     "brideFamily": {
-      "address": "Tư gia nhà gái",
-      "mapsUrl": ""
+      "address": "TDP Yên Ngọc, phường Mỹ Hào, tỉnh Hưng Yên",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=TDP%20Y%C3%AAn%20Ng%E1%BB%8Dc%2C%20Ph%C6%B0%E1%BB%9Dng%20M%E1%BB%B9%20H%C3%A0o%2C%20T%E1%BB%89nh%20H%C6%B0ng%20Y%C3%AAn",
+      "time": ""
     }
   },
   "family": {
-    "nhaTrai": { "ong": "Lương Văn Sánh", "ba": "Phạm Thị Hiền" },
-    "nhaGai": { "ong": "Trần Văn Cư", "ba": "Nguyễn Thị Hảo" }
+    "nhaTrai": {
+      "ong": "Lương Văn Sánh",
+      "ba": "Phạm Thị Hiền"
+    },
+    "nhaGai": {
+      "ong": "Trần Văn Cư",
+      "ba": "Nguyễn Thị Hảo"
+    }
   },
   "announcement": "TRÂN TRỌNG BÁO TIN LỄ THÀNH HÔN CỦA CON CHÚNG TÔI",
   "story": {
     "title": "Hành trình yêu",
-    "text": "Lương Sáng và Trần Nhung gặp nhau trong một buổi chiều rất nhẹ. Không có tiếng lớn. Chỉ những ngày đi cùng, không vội, và một lời hứa đủ chậm để ở lại. Ngày này, hai gia đình mời những người thương đến chứng kiến.",
+    "text": "Lương Sáng và Trần Nhung gặp nhau trong một buổi chiều rất nhẹ. Không có tiếng lớn. Chỉ những ngày đi cùng, không vội và một lời hứa đủ chậm để ở lại. Ngày này, hai gia đình mời những người thương đến chứng kiến.",
     "timeline": [
-      { "date": "2024", "event": "Một chiều rất nhẹ" },
-      { "date": "2025", "event": "Những ngày đi cùng, không vội" },
-      { "date": "2026", "event": "Lời hứa đủ để ở lại" },
-      { "date": "01-2027", "event": "Lễ thành hôn" }
+      {
+        "date": "2024",
+        "event": "Một chiều rất nhẹ"
+      },
+      {
+        "date": "2025",
+        "event": "Những ngày đi cùng, không vội"
+      },
+      {
+        "date": "2026",
+        "event": "Lời hứa đủ để ở lại"
+      },
+      {
+        "date": "20-12-2026",
+        "event": "Lễ thành hôn"
+      }
     ]
   },
-  "hero": { "src": "/gallery/mau/editorial-bia.jpg", "focus": "50% 42%" },
+  "hero": {
+    "src": "/gallery/mau/editorial-bia.jpg",
+    "focus": "50% 42%"
+  },
   "gallery": [
-    { "src": "/gallery/mau/editorial-bia.jpg", "alt": "Ảnh cưới Lương Sáng và Trần Nhung", "caption": "", "focus": "50% 42%" },
-    { "src": "/gallery/mau/editorial-1.jpg", "alt": "Ảnh cưới 2", "caption": "", "focus": "50% 40%" },
-    { "src": "/gallery/mau/editorial-2.jpg", "alt": "Ảnh cưới 3", "caption": "", "focus": "50% 40%" },
-    { "src": "/gallery/mau/editorial-3.jpg", "alt": "Ảnh cưới 4", "caption": "", "focus": "50% 40%" }
+    {
+      "src": "/gallery/mau/editorial-bia.jpg",
+      "alt": "Ảnh cổng cưới Lương Sáng và Trần Nhung",
+      "caption": "",
+      "focus": "50% 42%"
+    },
+    {
+      "src": "/gallery/mau/editorial-2.jpg",
+      "alt": "Ảnh gia đình Lương Sáng và Trần Nhung",
+      "caption": "",
+      "focus": "50% 35%"
+    }
   ],
   "gift": {
     "groom": {
-      "qrPath": "/qrcode/qr-chu-re.png",
+      "qrPath": "/qrcode/qr-chu-re.jpg",
       "name": "Chú rể",
       "bankName": "Vietcombank",
-      "accountNumber": "1234567890",
-      "accountName": "LUONG SANG"
+      "accountNumber": "9972282892",
+      "accountName": "LUONG VAN SANG"
     },
     "bride": {
-      "qrPath": "/qrcode/qr-co-dau.png",
+      "qrPath": "/qrcode/qr-co-dau.jpg",
       "name": "Cô dâu",
-      "bankName": "Vietcombank",
-      "accountNumber": "0987654321",
-      "accountName": "TRAN NHUNG"
+      "bankName": "MBBANK",
+      "accountNumber": "0337280999",
+      "accountName": "TRAN THI NHUNG"
     }
   },
   "music": {
-    "playlist": ["/music/1.mp3"],
+    "playlist": [
+      "/music/1.mp3"
+    ],
     "volume": 0.5
   }
 }

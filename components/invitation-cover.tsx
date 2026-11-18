@@ -130,7 +130,7 @@ export function InvitationCover({
                     </p>
                     <h2
                       id="cover-title"
-                      className="cover-text font-serif text-[1.75rem] sm:text-4xl font-bold tracking-wide mb-6 flex flex-nowrap items-center justify-center gap-x-2 sm:gap-x-3"
+                      className="cover-text font-serif text-[1.75rem] sm:text-4xl tracking-wide mb-6 flex flex-nowrap items-center justify-center gap-x-2 sm:gap-x-3"
                     >
                       <span className="whitespace-nowrap drop-shadow-sm">{WEDDING.groomShort}</span>
                       <PeachBlossom leaves className="cover-accent w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
@@ -140,7 +140,7 @@ export function InvitationCover({
 
                     <OrnamentDivider className="mb-6 cover-accent" />
 
-                    <p className={`cover-date font-serif text-xl sm:text-2xl tracking-[0.2em] ${guestName || !announcementIsInvite ? 'mb-2' : 'mb-10'}`}>
+                    <p className={`cover-date font-sans text-xl sm:text-2xl tracking-[0.2em] ${guestName || !announcementIsInvite ? 'mb-2' : 'mb-10'}`}>
                       {dateFormatted}
                     </p>
 

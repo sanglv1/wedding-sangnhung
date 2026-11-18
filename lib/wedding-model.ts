@@ -70,7 +70,8 @@ export function deriveWedding(content: WeddingContent): WeddingModel {
   const endISO = end?.iso ?? ''
   const startStamp = startISO ? calendarStamp(startISO) : ''
   const endStamp = endISO ? calendarStamp(endISO) : ''
-  const calendarDetails = `${content.event.ceremonyName} & ${content.event.mealName}`.trim()
+  const mealLine = [content.event.mealName.trim(), content.event.mealTime.trim()].filter(Boolean).join(': ')
+  const calendarDetails = [content.event.ceremonyName.trim(), mealLine].filter(Boolean).join('\n')
   const addToCalendarUrl =
     startStamp && endStamp
       ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Đám cưới ${groomShort} & ${brideShort}`)}&dates=${startStamp}/${endStamp}&ctz=Asia/Ho_Chi_Minh&details=${encodeURIComponent(calendarDetails)}&location=${encodeURIComponent(location)}`

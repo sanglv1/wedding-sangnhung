@@ -1,8 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { CardSpotlight } from '@/components/card-spotlight'
-import { CeremonyAnnouncementSection } from '@/components/ceremony-announcement-section'
-import { FamilySection } from '@/components/family-section'
 import { FloatingActions } from '@/components/floating-actions'
 import { GallerySection } from '@/components/gallery-section'
 import { GiftSection } from '@/components/gift-section'
@@ -59,7 +57,7 @@ export function WeddingSite({
         showGuestbook={guestbook}
         sections={{
           story: model.hasStory,
-          family: Boolean(model.family.nhaTrai.ong || model.family.nhaTrai.ba || model.family.nhaGai.ong || model.family.nhaGai.ba),
+          family: false,
           schedule: Boolean(
             names.date || names.ceremony.time || names.ceremony.venue || names.intimateMeal.time || names.intimateMeal.venue
             || model.familyAddresses.groomFamily.address || model.familyAddresses.brideFamily.address,
@@ -77,15 +75,13 @@ export function WeddingSite({
       <main className="relative z-[1] min-h-screen overflow-x-hidden">
         <HeroSection model={model} />
         <StorySection model={model} />
-        <FamilySection model={model} />
-        <CeremonyAnnouncementSection model={model} />
         <ScheduleSection model={model} />
         {gallery.length > 0 && (
           <GallerySection images={gallery} brand={{ groom: names.groomBrand, bride: names.brideBrand, date: names.dateShort }} />
         )}
         {archived ? (
           <section className="mx-auto max-w-xl px-4 py-16 text-center">
-            <h2 className="font-serif text-4xl text-w-strong">Thiệp đã khép</h2>
+            <h2 className="font-sans text-3xl font-medium tracking-wide text-w-strong">Thiệp đã khép</h2>
             <p className="mt-3 text-sm leading-7 text-w-soft">
               Đã qua {KEEP_DAYS} ngày sau lễ. Khách vẫn đọc được thiệp, và không gửi thêm xác nhận hay lời chúc.
             </p>

@@ -10,7 +10,7 @@ export function StorySection({ model = CLASSIC_MODEL }: { model?: WeddingModel }
     <section id="cau-chuyen" className="py-16 sm:py-20 md:py-28 scroll-mt-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <Reveal className="section-frame">
-          <h2 className="heading-title text-4xl md:text-5xl font-serif font-bold text-w-strong text-center">
+          <h2 className="heading-title text-center font-sans text-3xl font-medium tracking-wide text-w-strong md:text-4xl">
             {LOVE_STORY.title}
           </h2>
           <OrnamentDivider className="mt-4 mb-6 sm:mb-8" />

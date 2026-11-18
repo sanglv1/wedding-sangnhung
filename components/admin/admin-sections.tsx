@@ -39,16 +39,16 @@ export function CoupleSection({ content, update }: SectionProps) {
         <Field label="Họ tên đầy đủ cô dâu">
           <TextInput value={c.bride} onChange={set('bride')} />
         </Field>
-        <Field label="Tên chú rể trên thiệp" hint="Hiện to ở thiệp bìa, ví dụ: Đức Toàn">
+        <Field label="Tên chú rể trên thiệp" hint="Hiện to ở thiệp bìa, ví dụ: Lương Sáng">
           <TextInput value={c.groomShort} onChange={set('groomShort')} />
         </Field>
-        <Field label="Tên cô dâu trên thiệp" hint="Ví dụ: Nhật Minh">
+        <Field label="Tên cô dâu trên thiệp" hint="Ví dụ: Trần Nhung">
           <TextInput value={c.brideShort} onChange={set('brideShort')} />
         </Field>
-        <Field label="Tên chú rể trên menu" hint="Ngắn gọn, ví dụ: Toàn">
+        <Field label="Tên chú rể trên menu" hint="Ngắn gọn, ví dụ: Sáng">
           <TextInput value={c.groomBrand} onChange={set('groomBrand')} />
         </Field>
-        <Field label="Tên cô dâu trên menu" hint="Ví dụ: Minh">
+        <Field label="Tên cô dâu trên menu" hint="Ví dụ: Nhung">
           <TextInput value={c.brideBrand} onChange={set('brideBrand')} />
         </Field>
       </Grid>
@@ -489,7 +489,7 @@ export function GiftSection({ content, update }: SectionProps) {
               <Field label="Số tài khoản">
                 <TextInput value={g.accountNumber} onChange={set('accountNumber')} inputMode="numeric" />
               </Field>
-              <Field label="Tên chủ tài khoản" hint="Viết hoa không dấu như trên app, ví dụ: DAO TIEN DAT">
+              <Field label="Tên chủ tài khoản" hint="Viết hoa không dấu như trên app, ví dụ: LUONG VAN SANG">
                 <TextInput value={g.accountName} onChange={set('accountName')} />
               </Field>
             </div>

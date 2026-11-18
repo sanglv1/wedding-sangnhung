@@ -6,6 +6,7 @@ import { GuestGreeting } from './guest-greeting'
 import { HeroPhoto } from './hero-photo'
 import { HouseLine } from './house-line'
 import { CornerOrnament, OrnamentDivider, SongHy } from './invitation-ornaments'
+import { ParentsOnCard } from './parents-on-card'
 import { TiltCard } from './tilt-card'
 
 function Names({ model, className }: { model: WeddingModel; className: string }) {
@@ -24,7 +25,7 @@ function ScrollHint({ href }: { href: string }) {
     <a
       href={href}
       className="mx-auto mt-6 flex w-fit min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 p-2 text-w-muted transition-colors hover:text-w-strong touch-manipulation sm:mt-8"
-      aria-label={href === '#cau-chuyen' ? 'Cuộn xuống phần câu chuyện' : 'Cuộn xuống'}
+      aria-label={href === '#cau-chuyen' ? 'Cuộn xuống phần câu chuyện' : 'Cuộn xuống phần lịch trình'}
     >
       <ChevronDown className="h-5 w-5" />
     </a>
@@ -58,7 +59,8 @@ export function HeroSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
                 <CornerOrnament position="bottom-left" />
                 <CornerOrnament position="bottom-right" />
                 <SongHy className="invite-hy h-7 w-14" />
-                <p className="invite-kicker mt-2">{model.announcement}</p>
+                <ParentsOnCard model={model} />
+                <p className="invite-kicker mt-5">{model.announcement}</p>
                 <GuestGreeting />
                 <Names model={model} className="mt-4 font-serif text-[2.6rem] sm:text-5xl leading-[1.1] invite-names invite-shimmer" />
                 <OrnamentDivider className="mt-5" />
@@ -87,7 +89,7 @@ export function HeroSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
             </div>
           </article>
         </TiltCard>
-        <ScrollHint href={model.hasStory ? '#cau-chuyen' : '#gia-dinh'} />
+        <ScrollHint href={model.hasStory ? '#cau-chuyen' : '#lich-trinh'} />
       </div>
     </section>
   )

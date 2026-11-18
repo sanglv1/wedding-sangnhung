@@ -17,7 +17,7 @@ export function SectionHeading({ children, description, icon }: SectionHeadingPr
           </div>
         </div>
       )}
-      <h2 className="heading-title text-4xl md:text-5xl font-serif font-bold text-w-strong">{children}</h2>
+      <h2 className="heading-title font-sans text-3xl font-medium tracking-wide text-w-strong md:text-4xl">{children}</h2>
       <div className="heading-ornament mt-4" aria-hidden>
         <span className="heading-line heading-line-left" />
         <PeachBlossom leaves className="heading-heart" />

@@ -127,7 +127,7 @@ export function GuestbookSection({ enabled: isGuestbookEnabled }: { enabled: boo
 
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
             <Reveal className="guestbook-panel md:sticky md:top-24 p-6 sm:p-7">
-              <h3 className="font-serif text-3xl text-w-strong text-center mb-1">Gửi lời chúc</h3>
+              <h3 className="mb-1 text-center font-sans text-2xl font-medium tracking-wide text-w-strong">Gửi lời chúc</h3>
               <div className="flex items-center justify-center gap-2 mb-6" aria-hidden>
                 <span className="h-px w-10 bg-w-gold/60" />
                 <Heart className="w-3.5 h-3.5 text-w-gold fill-current" />
@@ -207,7 +207,7 @@ export function GuestbookSection({ enabled: isGuestbookEnabled }: { enabled: boo
             {isGuestbookEnabled && (
               <Reveal delay={150}>
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <h3 className="font-serif text-3xl text-w-strong">Lời chúc</h3>
+                  <h3 className="font-sans text-2xl font-medium tracking-wide text-w-strong">Lời chúc</h3>
                   {entries.length > 0 && (
                     <span className="inline-flex items-center gap-1.5 text-sm text-w-muted">
                       <Heart className="w-4 h-4 text-w-gold fill-current" aria-hidden />

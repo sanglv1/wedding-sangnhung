@@ -142,7 +142,7 @@ export function GalleryLightbox({ images, index, onIndexChange, onClose }: Galle
               onClose={close}
             />
             {current.caption && !zoomed && (
-              <p className="pointer-events-none absolute bottom-3 inset-x-0 text-center font-serif text-2xl sm:text-3xl text-white drop-shadow-lg px-6">
+              <p className="pointer-events-none absolute bottom-3 inset-x-0 px-6 text-center font-sans text-base text-white drop-shadow-lg sm:text-lg">
                 {current.caption}
               </p>
             )}

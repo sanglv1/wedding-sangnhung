@@ -14,9 +14,7 @@ export function HouseLine({ model, variant }: { model: WeddingModel; variant: 'h
   return (
     <div className="mt-3 text-sm invite-muted">
       <p>Mời về {focus.label.toLocaleLowerCase('vi')}</p>
-      {focus.place && <p className="mt-0.5">{focus.place}</p>}
       {focus.time && focus.time !== model.wedding.ceremony.time && <p className="mt-0.5">Giờ đến: {focus.time}</p>}
-      {focus.otherLine && <p className="mt-1 text-xs italic">{focus.otherLine}</p>}
     </div>
   )
 }
