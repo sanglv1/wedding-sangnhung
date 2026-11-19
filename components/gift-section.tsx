@@ -9,6 +9,7 @@ import { isOptimizableImage } from '@/lib/media-src'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { showToast } from '@/components/ui/toast'
 import { Reveal } from './reveal'
+import { SectionFrame } from './section-frame'
 import { SectionHeading } from './section-heading'
 
 type GiftAccount = WeddingModel['gift']['groom']
@@ -242,7 +243,7 @@ export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
     <>
       <section id="hop-mung" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="section-frame">
+          <SectionFrame>
             <SectionHeading
               icon={<Gift className="w-7 h-7" aria-hidden />}
               description="Gửi lời chúc phúc đến chú rể và cô dâu qua mã QR hoặc số tài khoản."
@@ -260,7 +261,7 @@ export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
               </div>
               <p className="mt-5 text-sm text-w-muted">Chọn hộp để xem mã QR</p>
             </Reveal>
-          </div>
+          </SectionFrame>
         </div>
       </section>
 

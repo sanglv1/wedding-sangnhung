@@ -40,7 +40,7 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
   const when = hourPhrase(w.ceremony.time || '11:00')
 
   return (
-    <div id="thu-moi" className="invite-card-inner flex h-full scroll-mt-24 flex-col items-center justify-center px-6 pt-10 pb-14 text-center sm:px-8 sm:pt-12 sm:pb-16">
+    <div id="thu-moi" className="relative flex h-full scroll-mt-24 flex-col items-center justify-center px-6 pt-10 pb-14 text-center sm:px-8 sm:pt-12 sm:pb-16">
       <CornerOrnament position="top-left" />
       <CornerOrnament position="top-right" />
       <CornerOrnament position="bottom-left" />

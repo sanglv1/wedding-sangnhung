@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { AutoTour } from '@/components/auto-tour'
 import { CardSpotlight } from '@/components/card-spotlight'
 import { FloatingActions } from '@/components/floating-actions'
 import { GallerySection } from '@/components/gallery-section'
@@ -46,7 +47,8 @@ export function WeddingSite({
 
   return (
     <>
-      {content.opening !== 'trang' && <InvitationCover model={model} />}
+      {content.opening !== 'trang' && <InvitationCover />}
+      <AutoTour />
       {trackOpens && <GuestOpenTracker />}
       <div className="paper-grain" aria-hidden />
       <CardSpotlight />

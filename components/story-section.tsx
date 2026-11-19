@@ -2,6 +2,7 @@ import { CLASSIC_MODEL } from '@/lib/constants'
 import type { WeddingModel } from '@/lib/wedding-model'
 import { OrnamentDivider } from './invitation-ornaments'
 import { Reveal } from './reveal'
+import { SectionFrame } from './section-frame'
 
 export function StorySection({ model = CLASSIC_MODEL }: { model?: WeddingModel }) {
   const LOVE_STORY = model.loveStory
@@ -9,7 +10,8 @@ export function StorySection({ model = CLASSIC_MODEL }: { model?: WeddingModel }
   return (
     <section id="cau-chuyen" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <Reveal className="section-frame">
+        <Reveal>
+          <SectionFrame>
           <h2 className="heading-title text-center font-sans text-3xl font-medium tracking-wide text-w-strong md:text-4xl">
             {LOVE_STORY.title}
           </h2>
@@ -52,6 +54,7 @@ export function StorySection({ model = CLASSIC_MODEL }: { model?: WeddingModel }
               })}
             </ol>
           </div>
+          </SectionFrame>
         </Reveal>
       </div>
     </section>

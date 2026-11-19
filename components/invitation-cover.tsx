@@ -1,18 +1,15 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Palette } from 'lucide-react'
-import { CLASSIC_MODEL } from '@/lib/constants'
-import type { WeddingModel } from '@/lib/wedding-model'
 import { useGuestName, useIsClient } from '@/hooks/use-guest-name'
 import { useWeddingTheme } from '@/hooks/use-wedding-theme'
 import { WEDDING_OPEN_EVENT } from '@/hooks/use-background-music'
 
-/** closed → opening (nắp lật, giấy trượt trong thiệp, tên viết) → revealing (thiệp nhấc lên) → hidden */
-type Stage = 'closed' | 'opening' | 'revealing' | 'hidden'
+/** closed → opening (dấu sáp xẹp, tam giác trên mở lên, tam giác dưới mở xuống) → hidden */
+type Stage = 'closed' | 'opening' | 'hidden'
 
-const OPEN_MS = 3400
-const REVEAL_MS = 900
+const OPEN_MS = 1800
 
 function WaxSeal({ gradientId }: { gradientId: string }) {
   const petals = [0, 60, 120, 180, 240, 300]
@@ -45,11 +42,17 @@ function WaxSeal({ gradientId }: { gradientId: string }) {
   )
 }
 
+function FlapEdge({ points }: { points: string }) {
+  return (
+    <svg className="wax-seam" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+      <polyline points={points} />
+    </svg>
+  )
+}
+
 export function InvitationCover({
-  model = CLASSIC_MODEL,
   allowThemeCycle = true,
 }: {
-  model?: WeddingModel
   allowThemeCycle?: boolean
 }) {
   const [stage, setStage] = useState<Stage>('closed')
@@ -57,30 +60,44 @@ export function InvitationCover({
   const guestName = useGuestName()
   const { themeName, cycleTheme } = useWeddingTheme()
   const sealId = useId().replace(/:/g, '')
+  const timerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (stage === 'hidden') return
-    const { overflow } = document.body.style
+    const htmlOverflow = document.documentElement.style.overflow
+    const bodyOverflow = document.body.style.overflow
+    // iOS bỏ qua overflow trên body, nên khóa cả html để nền không trượt dưới phong bì
+    document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = overflow
+      document.documentElement.style.overflow = htmlOverflow
+      document.body.style.overflow = bodyOverflow
     }
   }, [stage])
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current)
+    }
+  }, [])
+
   const handleOpen = () => {
     if (stage !== 'closed') return
-    setStage('opening')
+    document.documentElement.dataset.opened = 'true'
     window.dispatchEvent(new Event(WEDDING_OPEN_EVENT))
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    setTimeout(() => {
-      setStage('revealing')
-      document.documentElement.dataset.opened = 'true'
-      setTimeout(() => {
-        setStage('hidden')
-        window.scrollTo({ top: 0 })
-      }, reduceMotion ? 0 : REVEAL_MS)
-    }, reduceMotion ? 0 : OPEN_MS)
+    if (reduceMotion) {
+      setStage('hidden')
+      window.scrollTo({ top: 0 })
+      return
+    }
+
+    setStage('opening')
+    timerRef.current = window.setTimeout(() => {
+      setStage('hidden')
+      window.scrollTo({ top: 0 })
+    }, OPEN_MS)
   }
 
   if (stage === 'hidden') return null
@@ -96,13 +113,12 @@ export function InvitationCover({
       className="wax-root fixed inset-0 z-[100]"
     >
       <div className="wax-backdrop" aria-hidden />
-      <div className="wax-wash" aria-hidden />
 
       {allowThemeCycle && (
         <button
           type="button"
           onClick={cycleTheme}
-          className="wax-palette absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/90 text-stone-600 shadow-lg transition-all hover:bg-white hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:top-6 sm:right-6 sm:h-12 sm:w-12"
+          className="wax-palette absolute top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/90 text-stone-600 shadow-lg transition-all hover:bg-white hover:text-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:top-[max(1.5rem,env(safe-area-inset-top))] sm:right-[max(1.5rem,env(safe-area-inset-right))] sm:h-12 sm:w-12"
           aria-label={`Đổi màu nền (hiện: ${themeName})`}
           title={`Đổi màu (${themeName})`}
         >
@@ -110,48 +126,48 @@ export function InvitationCover({
         </button>
       )}
 
-      <div className="wax-stage absolute inset-0 flex items-center justify-center p-4">
-        <div className="wax-float">
-        <button
-          type="button"
-          onClick={handleOpen}
-          autoFocus
-          className="wax-envelope"
-          aria-label={guestName ? `Mở thiệp cưới. Trân trọng kính mời ${guestName}` : 'Mở thiệp cưới'}
-        >
-          <span className="wax-pocket">
-            <span className="wax-body">
-              <span className="wax-invite">Trân trọng kính mời</span>
-              <span className="wax-guest">{guestLine}</span>
-              <span className="wax-hint">{stage === 'closed' ? 'Chạm để mở' : 'Đang mở'}</span>
-            </span>
-            <span className="wax-sheet" aria-hidden>
-              <span className="wax-pair">
-                <span className="wax-pair-drift">
-                  <span>{model.wedding.groom}</span>
-                  <span className="wax-heart">❤️</span>
-                  <span>{model.wedding.bride}</span>
+      <div className="wax-stage">
+        <div className="wax-shell">
+          <button
+            type="button"
+            onClick={handleOpen}
+            autoFocus
+            className="wax-envelope"
+            aria-label={guestName ? `Mở thiệp cưới. Trân trọng kính mời ${guestName}` : 'Mở thiệp cưới'}
+          >
+            <span className="wax-flap wax-flap-bottom" aria-hidden>
+              <span className="wax-flap-face wax-flap-front">
+                <FlapEdge points="0,49.2 50,36 100,49.2" />
+                <span className="wax-invite-block">
+                  <span className="wax-invite">Trân trọng kính mời</span>
+                  <span className="wax-guest">{guestLine}</span>
+                  <span className="wax-hint">
+                    <span className="wax-hint-touch">Chạm để mở</span>
+                    <span className="wax-hint-click">Nhấn để mở</span>
+                  </span>
                 </span>
               </span>
+              <span className="wax-flap-face wax-flap-back" />
             </span>
-          </span>
-          <span className="wax-flap" aria-hidden>
-            <span className="wax-flap-face wax-flap-front">
-              <span className="wax-welcome">
-                <span className="wax-kicker">Welcome</span>
-                <span className="wax-to">to</span>
-                <span className="wax-word">Wedding</span>
+
+            <span className="wax-flap wax-flap-top" aria-hidden>
+              <span className="wax-flap-face wax-flap-front">
+                <FlapEdge points="0,50.8 50,64 100,50.8" />
+                <span className="wax-welcome">
+                  <span className="wax-kicker">Welcome</span>
+                  <span className="wax-to">to</span>
+                  <span className="wax-word">Wedding</span>
+                </span>
               </span>
+              <span className="wax-flap-face wax-flap-back" />
             </span>
-            <span className="wax-flap-face wax-flap-back" />
-          </span>
-          <span className="wax-seal">
-            <WaxSeal gradientId={sealId} />
-          </span>
-        </button>
+
+            <span className="wax-seal">
+              <WaxSeal gradientId={sealId} />
+            </span>
+          </button>
         </div>
       </div>
-
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { Heart, MessageCircleHeart, Send } from 'lucide-react'
 import { GUESTBOOK_LIMITS, fetchGuestbook, postGuestbook, type GuestbookEntry } from '@/lib/guestbook'
 import { useGuestName } from '@/hooks/use-guest-name'
 import { Reveal } from './reveal'
+import { SectionFrame } from './section-frame'
 import { SectionHeading } from './section-heading'
 
 const dateFormatter = new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -110,7 +111,7 @@ export function GuestbookSection({ enabled: isGuestbookEnabled }: { enabled: boo
   return (
     <section id="loi-chuc" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="section-frame">
+        <SectionFrame>
           <SectionHeading
             icon={<MessageCircleHeart className="w-7 h-7" aria-hidden />}
             description="Mỗi lời chúc của bạn là một món quà quý giá dành cho chúng mình"
@@ -257,7 +258,7 @@ export function GuestbookSection({ enabled: isGuestbookEnabled }: { enabled: boo
               </Reveal>
             )}
           </div>
-        </div>
+        </SectionFrame>
       </div>
     </section>
   )

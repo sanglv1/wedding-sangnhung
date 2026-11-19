@@ -2,6 +2,7 @@
 
 import { MapPin } from 'lucide-react'
 import { PeachBlossom } from '@/components/invitation-ornaments'
+import { SectionFrame } from '@/components/section-frame'
 import { SectionHeading } from '@/components/section-heading'
 import { CLASSIC_MODEL } from '@/lib/constants'
 import type { WeddingModel } from '@/lib/wedding-model'
@@ -121,7 +122,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
   return (
     <section id="lich-trinh" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
-        <div className="section-frame text-center">
+        <SectionFrame className="text-center">
           <SectionHeading>{wedding.intimateMeal.name || 'Bữa cơm thân mật'}</SectionHeading>
 
           {meal && (
@@ -215,7 +216,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
               })}
             </div>
           )}
-        </div>
+        </SectionFrame>
       </div>
     </section>
   )

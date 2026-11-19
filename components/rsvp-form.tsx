@@ -6,6 +6,7 @@ import { useGuestName } from '@/hooks/use-guest-name'
 import { useGuestSide } from '@/hooks/use-guest-side'
 import { normalizePhone, postRsvp, RSVP_GUEST_OPTIONS, VN_PHONE } from '@/lib/rsvp'
 import { Reveal } from './reveal'
+import { SectionFrame } from './section-frame'
 import { SectionHeading } from './section-heading'
 
 /** Chỉ dùng khi chưa kết nối Upstash Redis */
@@ -151,7 +152,7 @@ export function RSVPForm() {
   return (
     <section id="xac-nhan" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="section-frame">
+        <SectionFrame>
           <SectionHeading description="Vui lòng xác nhận để gia đình chuẩn bị chu đáo nhất">
             Xác nhận tham dự
           </SectionHeading>
@@ -309,7 +310,7 @@ export function RSVPForm() {
               </form>
             )}
           </Reveal>
-        </div>
+        </SectionFrame>
       </div>
     </section>
   )

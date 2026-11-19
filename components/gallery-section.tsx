@@ -6,6 +6,7 @@ import type { GalleryImage } from '@/lib/gallery'
 import { isOptimizableImage } from '@/lib/media-src'
 import { GalleryLightbox } from './gallery-lightbox'
 import { Reveal } from './reveal'
+import { SectionFrame } from './section-frame'
 import { SectionHeading } from './section-heading'
 import styles from './gallery-section.module.css'
 
@@ -81,7 +82,7 @@ export function GallerySection({
     <>
       <section id="khoanh-khac" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="section-frame">
+          <SectionFrame>
             <SectionHeading description="Những khoảnh khắc của chúng mình">Khoảnh khắc</SectionHeading>
             <Reveal>
               <div className={`${styles.board} ${side.length === 0 ? styles.boardSolo : ''}`}>
@@ -116,7 +117,7 @@ export function GallerySection({
                 </div>
               </div>
             </Reveal>
-          </div>
+          </SectionFrame>
         </div>
       </section>
 
