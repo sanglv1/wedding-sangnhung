@@ -51,6 +51,7 @@ export function AutoTour() {
 
     let disposed = false
     let armed = false
+    let guestPaused = false
     let mode: 'wait' | 'run' | 'idle' = 'wait'
     let held = false
     let frame = 0
@@ -80,6 +81,7 @@ export function AutoTour() {
     }
     const pause = () => {
       if (disposed || !armed) return
+      guestPaused = true
       if (mode === 'idle') {
         armIdle()
         return
@@ -168,11 +170,11 @@ export function AutoTour() {
       await waitUntilCoverGone()
       if (disposed) return
       armed = true
-      if (mode === 'idle') return
+      if (guestPaused) return
       await new Promise<void>((resolve) => {
         delayTimer = window.setTimeout(resolve, START_DELAY_MS)
       })
-      if (disposed || mode === 'idle') return
+      if (disposed || guestPaused) return
       begin()
     }
 
