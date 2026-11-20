@@ -3,6 +3,7 @@
 import { Countdown } from '@/components/countdown'
 import { CornerOrnament, OrnamentDivider, SongHy } from '@/components/invitation-ornaments'
 import { ParentsOnCard } from '@/components/parents-on-card'
+import { Reveal } from '@/components/reveal'
 import { useGuestName } from '@/hooks/use-guest-name'
 import type { WeddingModel } from '@/lib/wedding-model'
 
@@ -47,17 +48,22 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
       <CornerOrnament position="bottom-right" />
       <SongHy className="invite-hy h-6 w-12" />
 
-      <p className="mt-5 text-[0.68rem] uppercase tracking-[0.32em] invite-muted sm:text-xs">Trân trọng kính mời</p>
-      <p className="mt-2 font-serif text-[2rem] leading-none invite-names sm:text-4xl">{who}</p>
-      <p className="mt-3 text-sm leading-relaxed invite-date">
-        tới tham dự buổi tiệc cưới
-        <br />
-        cùng gia đình
-      </p>
+      <Reveal className="mt-5 flex flex-col items-center">
+        <p className="text-[0.68rem] uppercase tracking-[0.32em] invite-muted sm:text-xs">Trân trọng kính mời</p>
+        <p className="mt-2 font-serif text-[2rem] leading-none invite-names sm:text-4xl">{who}</p>
+        <p className="mt-3 text-sm leading-relaxed invite-date">
+          tới tham dự buổi tiệc cưới
+          <br />
+          cùng gia đình
+        </p>
+      </Reveal>
 
-      <Names model={model} />
-      <OrnamentDivider className="mt-5" />
+      <Reveal delay={140} className="flex flex-col items-center">
+        <Names model={model} />
+        <OrnamentDivider className="mt-5" />
+      </Reveal>
 
+      <Reveal delay={240} className="flex flex-col items-center">
       {w.ceremony.day && (
         <div className="mt-4 flex items-center justify-center gap-3 invite-date sm:gap-4">
           <span className="w-[5.5rem] whitespace-nowrap text-right text-[0.7rem] uppercase tracking-[0.2em] sm:w-24 sm:text-xs">
@@ -73,14 +79,17 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
       )}
       {w.ceremony.lunarDate && <p className="mt-2 text-xs italic invite-muted sm:text-sm">({w.ceremony.lunarDate})</p>}
       <p className="mt-2 text-sm invite-date">Hôn lễ lúc {when}{venuePhrase(w.ceremony.venue)}</p>
+      </Reveal>
 
-      <div className="mt-6 w-full max-w-[19.5rem] sm:max-w-md">
+      <Reveal delay={320} className="mt-6 w-full max-w-[19.5rem] sm:max-w-md">
+      <div className="w-full">
         <div className="mx-auto mb-4 h-px w-14 bg-w-line-strong/55" aria-hidden />
         <ParentsOnCard model={model} />
         {w.startISO && w.endISO && (
           <Countdown startISO={w.startISO} endISO={w.endISO} />
         )}
       </div>
+      </Reveal>
     </div>
   )
 }

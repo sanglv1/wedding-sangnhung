@@ -2,6 +2,7 @@
 
 import { MapPin } from 'lucide-react'
 import { PeachBlossom } from '@/components/invitation-ornaments'
+import { Reveal } from '@/components/reveal'
 import { SectionFrame } from '@/components/section-frame'
 import { SectionHeading } from '@/components/section-heading'
 import { CLASSIC_MODEL } from '@/lib/constants'
@@ -126,7 +127,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
           <SectionHeading>{wedding.intimateMeal.name || 'Bữa cơm thân mật'}</SectionHeading>
 
           {meal && (
-            <>
+            <Reveal>
               <p className="text-sm tracking-[0.28em] text-w-muted">
                 {meal.clock}
                 <span className="mx-3 text-w-line-strong">·</span>
@@ -142,7 +143,11 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                 </span>
               </div>
               {lunar && <p className="mt-3 text-sm italic text-w-soft">({lunar})</p>}
+            </Reveal>
+          )}
 
+          {meal && (
+            <Reveal delay={120}>
               <div className="mx-auto mt-8 max-w-sm">
                 <p className="font-serif text-3xl text-w-strong">Tháng {meal.month} / {meal.year}</p>
                 <div className="mx-auto mt-2 h-px w-24 bg-w-line" />
@@ -172,10 +177,11 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                   Thêm vào lịch
                 </a>
               )}
-            </>
+            </Reveal>
           )}
 
           {houses.length > 0 && (
+            <Reveal delay={160}>
             <div className={`mx-auto mt-10 grid max-w-2xl items-stretch ${houses.length > 1 ? 'grid-cols-[1fr_auto_1fr] gap-x-2 gap-y-0 sm:gap-x-6' : ''}`}>
               {houses.map((house, index) => {
                 const lines = addressLines(house.address)
@@ -215,6 +221,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                 )
               })}
             </div>
+            </Reveal>
           )}
         </SectionFrame>
       </div>

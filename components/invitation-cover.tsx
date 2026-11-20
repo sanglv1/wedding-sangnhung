@@ -6,46 +6,75 @@ import { useGuestName, useIsClient } from '@/hooks/use-guest-name'
 import { useWeddingTheme } from '@/hooks/use-wedding-theme'
 import { WEDDING_OPEN_EVENT } from '@/hooks/use-background-music'
 
-/** closed → opening (dấu sáp xẹp, tam giác trên mở lên, tam giác dưới mở xuống) → hidden */
+/** closed → opening (nắp trên trượt lên, nắp dưới trượt xuống, dấu sáp đi cùng mũi nắp) → hidden */
 type Stage = 'closed' | 'opening' | 'hidden'
 
-const OPEN_MS = 1800
+const OPEN_MS = 1550
+
+function blobPath(cx: number, cy: number, r: number, bumps: number, amp: number) {
+  const steps = bumps * 2
+  let d = ''
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * Math.PI * 2
+    const rad = r + (i % 2 === 0 ? amp : -amp * 0.28)
+    const x = cx + Math.cos(t) * rad
+    const y = cy + Math.sin(t) * rad
+    d += `${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`
+  }
+  return `${d}Z`
+}
 
 function WaxSeal({ gradientId }: { gradientId: string }) {
-  const petals = [0, 60, 120, 180, 240, 300]
+  const petals = [0, 72, 144, 216, 288]
   return (
     <svg className="wax-seal-svg" viewBox="0 0 200 200" aria-hidden>
       <defs>
         <radialGradient id={gradientId} cx="36%" cy="30%" r="72%">
-          <stop offset="0%" stopColor="#fff1cc" />
-          <stop offset="38%" stopColor="#e7c56a" />
-          <stop offset="100%" stopColor="#9a6a2c" />
+          <stop offset="0%" stopColor="#fff6dc" />
+          <stop offset="26%" stopColor="#f0d392" />
+          <stop offset="58%" stopColor="#d7a44c" />
+          <stop offset="100%" stopColor="#8a5820" />
         </radialGradient>
-        <filter id={`${gradientId}-edge`} x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" result="n" />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="4" />
-        </filter>
+        <radialGradient id={`${gradientId}-well`} cx="40%" cy="34%" r="68%">
+          <stop offset="0%" stopColor="#f8e7bf" />
+          <stop offset="100%" stopColor="#c8923c" />
+        </radialGradient>
       </defs>
-      <circle cx="100" cy="104" r="70" fill="rgb(0 0 0 / 0.28)" />
-      <circle cx="100" cy="100" r="76" fill={`url(#${gradientId})`} filter={`url(#${gradientId}-edge)`} />
-      <circle cx="100" cy="100" r="64" fill="none" stroke="#fff6df" strokeOpacity="0.45" strokeWidth="1.5" />
-      <g transform="translate(100 102)" fill="#f6e2a8" stroke="#7c5418" strokeWidth="1.4">
+      <ellipse cx="100" cy="118" rx="58" ry="16" fill="rgb(40 8 10 / 0.35)" />
+      <path d={blobPath(100, 100, 76, 16, 6.5)} fill="#6a4014" />
+      <path d={blobPath(100, 98, 72, 16, 5.5)} fill={`url(#${gradientId})`} />
+      <circle cx="100" cy="98" r="52" fill={`url(#${gradientId}-well)`} />
+      <circle cx="100" cy="98" r="52" fill="none" stroke="#fff6df" strokeOpacity="0.55" strokeWidth="1.4" />
+      <circle cx="100" cy="98" r="46" fill="none" stroke="#7a5018" strokeOpacity="0.35" strokeWidth="1" />
+      <ellipse cx="78" cy="74" rx="26" ry="14" fill="#fff" opacity="0.28" />
+      <g transform="translate(100 100) scale(1.32)">
         {petals.map((turn) => (
-          <ellipse key={turn} rx="15" ry="27" transform={`rotate(${turn}) translate(0 -24)`} />
+          <ellipse
+            key={turn}
+            cx="0"
+            cy="-14"
+            rx="8"
+            ry="12.5"
+            transform={`rotate(${turn})`}
+            fill="#f7e6c0"
+            stroke="#6d4814"
+            strokeWidth="1.15"
+          />
         ))}
-        <ellipse rx="11" ry="20" transform="rotate(-28) translate(34 8)" fill="#e7c27a" />
-        <ellipse rx="11" ry="20" transform="rotate(28) translate(-34 8)" fill="#e7c27a" />
-        <circle r="13" fill="#f8e7b4" />
-        <circle r="5.5" fill="#c4923a" stroke="none" />
+        <circle r="6.2" fill="#fbf1d6" stroke="#6d4814" strokeWidth="1" />
+        <circle r="2.3" fill="#c48932" stroke="none" />
+        <path d="M0 6 C 1 16 2 24 1 34" fill="none" stroke="#6d4814" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M1 20 C 12 14 22 16 21 24 C 13 22 6 24 1 27" fill="#e8cb90" stroke="#6d4814" strokeWidth="1" />
+        <path d="M0 26 C -12 22 -20 26 -17 33 C -10 30 -3 30 0 33" fill="#e8cb90" stroke="#6d4814" strokeWidth="1" />
       </g>
     </svg>
   )
 }
 
-function FlapEdge({ points }: { points: string }) {
+function FlapEdge() {
   return (
     <svg className="wax-seam" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-      <polyline points={points} />
+      <path d="M0 42 L50 52 L100 42" />
     </svg>
   )
 }
@@ -128,6 +157,7 @@ export function InvitationCover({
 
       <div className="wax-stage">
         <div className="wax-shell">
+          <div className="wax-paper" aria-hidden />
           <button
             type="button"
             onClick={handleOpen}
@@ -135,35 +165,27 @@ export function InvitationCover({
             className="wax-envelope"
             aria-label={guestName ? `Mở thiệp cưới. Trân trọng kính mời ${guestName}` : 'Mở thiệp cưới'}
           >
-            <span className="wax-flap wax-flap-bottom" aria-hidden>
-              <span className="wax-flap-face wax-flap-front">
-                <FlapEdge points="0,49.2 50,36 100,49.2" />
-                <span className="wax-invite-block">
-                  <span className="wax-invite">Trân trọng kính mời</span>
-                  <span className="wax-guest">{guestLine}</span>
-                  <span className="wax-hint">
-                    <span className="wax-hint-touch">Chạm để mở</span>
-                    <span className="wax-hint-click">Nhấn để mở</span>
-                  </span>
+            <span className="wax-flap wax-flap-bottom">
+              <span className="wax-invite-block">
+                <span className="wax-invite">Trân trọng kính mời</span>
+                <span className="wax-guest">{guestLine}</span>
+                <span className="wax-hint">
+                  <span className="wax-hint-touch">Chạm để mở</span>
+                  <span className="wax-hint-click">Nhấn để mở</span>
                 </span>
               </span>
-              <span className="wax-flap-face wax-flap-back" />
             </span>
 
-            <span className="wax-flap wax-flap-top" aria-hidden>
-              <span className="wax-flap-face wax-flap-front">
-                <FlapEdge points="0,50.8 50,64 100,50.8" />
-                <span className="wax-welcome">
-                  <span className="wax-kicker">Welcome</span>
-                  <span className="wax-to">to</span>
-                  <span className="wax-word">Wedding</span>
-                </span>
+            <span className="wax-flap wax-flap-top">
+              <FlapEdge />
+              <span className="wax-welcome">
+                <span className="wax-kicker">Welcome</span>
+                <span className="wax-to">to</span>
+                <span className="wax-word">Wedding</span>
               </span>
-              <span className="wax-flap-face wax-flap-back" />
-            </span>
-
-            <span className="wax-seal">
-              <WaxSeal gradientId={sealId} />
+              <span className="wax-seal">
+                <WaxSeal gradientId={sealId} />
+              </span>
             </span>
           </button>
         </div>
