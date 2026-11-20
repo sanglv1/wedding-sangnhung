@@ -92,6 +92,17 @@ export function InvitationCover({
   const timerRef = useRef<number | null>(null)
 
   useEffect(() => {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+    const root = document.documentElement
+    // Khóa cuộn mượt lúc tải lại, kẻo trình duyệt nhớ chỗ cũ rồi trượt lên đầu
+    root.style.scrollBehavior = 'auto'
+    window.scrollTo(0, 0)
+    return () => {
+      root.style.scrollBehavior = ''
+    }
+  }, [])
+
+  useEffect(() => {
     if (stage === 'hidden') return
     const htmlOverflow = document.documentElement.style.overflow
     const bodyOverflow = document.body.style.overflow
@@ -116,16 +127,24 @@ export function InvitationCover({
     window.dispatchEvent(new Event(WEDDING_OPEN_EVENT))
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const jumpToTop = () => {
+      const root = document.documentElement
+      const previous = root.style.scrollBehavior
+      root.style.scrollBehavior = 'auto'
+      window.scrollTo(0, 0)
+      root.style.scrollBehavior = previous
+    }
+
     if (reduceMotion) {
       setStage('hidden')
-      window.scrollTo({ top: 0 })
+      jumpToTop()
       return
     }
 
     setStage('opening')
     timerRef.current = window.setTimeout(() => {
       setStage('hidden')
-      window.scrollTo({ top: 0 })
+      jumpToTop()
     }, OPEN_MS)
   }
 

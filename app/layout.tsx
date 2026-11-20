@@ -74,6 +74,12 @@ export default async function RootLayout({
       <head>
         <meta name="theme-color" content={THEMES[siteTheme].swatch} />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if('scrollRestoration'in history)history.scrollRestoration='manual';var goTop=function(){var h=document.documentElement;var p=h.style.scrollBehavior;h.style.scrollBehavior='auto';window.scrollTo(0,0);h.style.scrollBehavior=p};goTop();window.addEventListener('pageshow',goTop)}catch(e){}",
+          }}
+        />
       </head>
       <body className="font-sans antialiased overflow-x-hidden">
         {children}
