@@ -52,7 +52,7 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
         <p className="text-[0.68rem] uppercase tracking-[0.32em] invite-muted sm:text-xs">Trân trọng kính mời</p>
         <p className="mt-2 font-serif text-[2rem] leading-none invite-names sm:text-4xl">{who}</p>
         <p className="mt-3 text-sm leading-relaxed invite-date">
-          tới tham dự buổi tiệc cưới
+          tới tham dự lễ thành hôn
           <br />
           cùng gia đình
         </p>
