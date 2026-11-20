@@ -220,20 +220,20 @@ export function AdminEditor({ initial, requirePassword }: { initial: WeddingCont
         </nav>
 
         <main className="space-y-6 pb-16">
-          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            {requirePassword ? (
-              <>
-                Đang sửa bản khách đang xem. Bấm Lưu là thấy ngay, không cần deploy lại. Ảnh và nhạc mới thì tải trên
-                máy khi chạy <code className="font-mono">npm run dev</code>, rồi deploy.
-              </>
-            ) : (
-              <>
-                Lưu tại đây ghi vào <code className="font-mono">content/wedding.json</code> trên máy. Muốn khách thấy thì
-                deploy lại. Bản trên Vercel mở <code className="font-mono">/admin</code>, đăng nhập bằng mật khẩu trang
-                quản lý, lưu là khách thấy ngay.
-              </>
-            )}
-          </p>
+          {/*<p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">*/}
+          {/*  {requirePassword ? (*/}
+          {/*    <>*/}
+          {/*      Đang sửa bản khách đang xem. Bấm Lưu là thấy ngay, không cần deploy lại. Ảnh và nhạc mới thì tải trên*/}
+          {/*      máy khi chạy <code className="font-mono">npm run dev</code>, rồi deploy.*/}
+          {/*    </>*/}
+          {/*  ) : (*/}
+          {/*    <>*/}
+          {/*      Lưu tại đây ghi vào <code className="font-mono">content/wedding.json</code> trên máy. Muốn khách thấy thì*/}
+          {/*      deploy lại. Bản trên Vercel mở <code className="font-mono">/admin</code>, đăng nhập bằng mật khẩu trang*/}
+          {/*      quản lý, lưu là khách thấy ngay.*/}
+          {/*    </>*/}
+          {/*  )}*/}
+          {/*</p>*/}
           <ThemeSection {...props} />
           <CoupleSection {...props} />
           <LetterSection {...props} />
