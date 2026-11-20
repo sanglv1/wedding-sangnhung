@@ -22,17 +22,38 @@ function houseBits(side: GuestSide | '' | undefined) {
   }
 }
 
+const MEAL_WEEKDAYS = ['chủ nhật', 'thứ hai', 'thứ ba', 'thứ tư', 'thứ năm', 'thứ sáu', 'thứ bảy']
+
+function mealInviteWhen(time: string) {
+  const match = /(\d{1,2})\s*h(?:\s*(\d{2}))?[^\d]*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(time)
+  if (!match) return time
+  const hour = Number(match[1])
+  const minute = match[2] ?? '00'
+  const day = Number(match[3])
+  const month = Number(match[4])
+  const year = Number(match[5])
+  const weekday = MEAL_WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]
+  const part = hour < 11 ? 'sáng' : hour < 13 ? 'trưa' : hour < 18 ? 'chiều' : 'tối'
+  return `${String(hour).padStart(2, '0')}:${minute} ${part}, ${weekday} ngày ${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`
+}
+
 const TEMPLATE_KEY = 'guest-invite-template'
-const DEFAULT_TEMPLATE =
+const PREVIOUS_TEMPLATE =
   `Trân trọng kính mời {ten} tới dự lễ thành hôn của ${WEDDING.groomShort} & ${WEDDING.brideShort} ` +
   `vào lúc ${WEDDING.ceremony.timeDisplay.toLowerCase()}, ${WEDDING.ceremony.dayOfWeek.toLowerCase()} ngày ${WEDDING.dateShort}.\n` +
+  `Thiệp mời: {link}`
+const DEFAULT_TEMPLATE =
+  `Trân trọng kính mời {ten} tới dự ${WEDDING.intimateMeal.name.toLocaleLowerCase('vi')} của ${WEDDING.groomShort} & ${WEDDING.brideShort} ` +
+  `vào lúc ${mealInviteWhen(WEDDING.intimateMeal.time)}.\n` +
   `Thiệp mời: {link}`
 
 const noopSubscribe = () => () => {}
 
 function readTemplate() {
   try {
-    return localStorage.getItem(TEMPLATE_KEY) || DEFAULT_TEMPLATE
+    const saved = localStorage.getItem(TEMPLATE_KEY)
+    if (!saved || saved === PREVIOUS_TEMPLATE) return DEFAULT_TEMPLATE
+    return saved
   } catch {
     return DEFAULT_TEMPLATE
   }

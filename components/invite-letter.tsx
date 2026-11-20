@@ -46,7 +46,7 @@ export function InviteLetter({ model }: { model: WeddingModel }) {
       <CornerOrnament position="top-right" />
       <CornerOrnament position="bottom-left" />
       <CornerOrnament position="bottom-right" />
-      <SongHy className="invite-hy h-6 w-12" />
+      <SongHy className="invite-hy h-14 w-16" />
 
       <Reveal className="mt-5 flex flex-col items-center">
         <p className="text-[0.68rem] uppercase tracking-[0.32em] invite-muted sm:text-xs">Trân trọng kính mời</p>

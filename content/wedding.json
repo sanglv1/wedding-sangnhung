@@ -25,7 +25,7 @@
   "addresses": {
     "groomFamily": {
       "address": "Thôn Tất Viên, xã Tân Hưng, tỉnh Hưng Yên",
-      "mapsUrl": "https://www.google.com/maps/dir//M462%2B3W6+ch%E1%BB%A3+t%E1%BA%A5t+vi%C3%AAn+th%E1%BB%A7+s%E1%BB%B9,+Khu+%C4%91%C3%B4+th%E1%BB%8B+%C4%90%E1%BA%A1i+h%E1%BB%8Dc+Ph%E1%BB%91+Hi%E1%BA%BFn,+T%C3%A2n+H%C6%B0ng,+H%C6%B0ng+Y%C3%AAn,+Vi%E1%BB%87t+Nam/@20.6622862,106.0998181,1017m/data=!3m1!1e3!4m18!1m8!3m7!1s0x3135c100427c9029:0x54c06adf7d06e1cf!2zY2jhu6MgdOG6pXQgdmnDqm4gdGjhu6cgc-G7uQ!8m2!3d20.6601602!4d106.1022794!15sCjRDaOG7oyBU4bqldCBWacOqbiwgeMOjIFTDom4gSMawbmcsIHThu4luaCBIxrBuZyBZw6pukgEGbWFya2V04AEA!16s%2Fg%2F11lcv0s57v!4m8!1m0!1m5!1m1!1s0x3135c100427c9029:0x54c06adf7d06e1cf!2m2!1d106.1022794!2d20.6601602!3e0?entry=ttu&g_ep=EgoyMDI2MTExNi4wIKXMDSoASAFQAw%3D%3D",
+      "mapsUrl": "https://maps.app.goo.gl/WhGci6xRCNL5zXhSA",
       "time": ""
     },
     "brideFamily": {
@@ -105,7 +105,7 @@
   ],
   "gift": {
     "groom": {
-      "qrPath": "/qrcode/qr-chu-re.jpg",
+      "qrPath": "/qrcode/qr-chu-re-mwoffv56.jpg",
       "name": "Chú rể",
       "bankName": "Vietcombank",
       "accountNumber": "9972282892",
