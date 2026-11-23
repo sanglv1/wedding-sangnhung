@@ -13,7 +13,7 @@ export function cleanRsvp(body: Record<string, unknown>): Omit<RsvpEntry, 'creat
   const name = oneLine(body.name, RSVP_LIMITS.name)
   const phone = normalizePhone(String(body.phone ?? ''))
   if (!name) return 'Vui lòng nhập họ tên'
-  if (!VN_PHONE.test(phone)) return 'Số điện thoại chưa đúng'
+  if (phone && !VN_PHONE.test(phone)) return 'Số điện thoại chưa đúng'
   const attending = body.attending === true
   const side = body.side === 'bride' ? 'bride' : 'groom'
   const guests = (RSVP_GUEST_OPTIONS as readonly string[]).includes(String(body.guests)) ? String(body.guests) : '1'
@@ -22,7 +22,8 @@ export function cleanRsvp(body: Record<string, unknown>): Omit<RsvpEntry, 'creat
     .trim()
     .slice(0, RSVP_LIMITS.note)
   const invite = body.invite ? oneLine(body.invite, 60) : undefined
-  return { id: phone, name, phone, attending, side, guests: attending ? guests : '0', note, invite }
+  const id = phone || `ten:${name.normalize('NFC').toLocaleLowerCase('vi')}`
+  return { id, name, phone, attending, side, guests: attending ? guests : '0', note, invite }
 }
 
 function parse(raw: string): RsvpEntry | null {

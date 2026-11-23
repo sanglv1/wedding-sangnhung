@@ -146,10 +146,12 @@ export function RsvpPanel({ password }: { password: string }) {
                 <Badge tone="gold">{SIDE_LABEL[e.side]}</Badge>
               </div>
               <p className="text-sm text-w-muted flex flex-wrap gap-x-3">
-                <a href={`tel:${e.phone}`} className="inline-flex items-center gap-1 underline underline-offset-2">
-                  <Phone className="w-3.5 h-3.5" aria-hidden />
-                  {e.phone}
-                </a>
+                {e.phone && (
+                  <a href={`tel:${e.phone}`} className="inline-flex items-center gap-1 underline underline-offset-2">
+                    <Phone className="w-3.5 h-3.5" aria-hidden />
+                    {e.phone}
+                  </a>
+                )}
                 <span>{dateFormatter.format(new Date(e.updatedAt))}</span>
                 {e.invite && e.invite !== e.name && <span>Link mời: {e.invite}</span>}
               </p>

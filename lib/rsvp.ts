@@ -23,7 +23,7 @@ export interface RsvpInput {
 }
 
 export interface RsvpEntry extends Omit<RsvpInput, '_gotcha'> {
-  /** = số điện thoại: khách gửi lại thì cập nhật chứ không tạo bản ghi mới */
+  /** Số điện thoại nếu có, không thì theo tên: khách gửi lại thì cập nhật chứ không tạo bản ghi mới */
   id: string
   createdAt: string
   updatedAt: string

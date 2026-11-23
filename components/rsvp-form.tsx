@@ -100,7 +100,7 @@ export function RSVPForm() {
     setError(null)
 
     const phone = normalizePhone(formData.phone)
-    if (!VN_PHONE.test(phone)) {
+    if (phone && !VN_PHONE.test(phone)) {
       setPhoneError('Số điện thoại chưa đúng, ví dụ: 0912 345 678')
       document.getElementById('rsvp-phone')?.focus()
       return
@@ -198,7 +198,7 @@ export function RSVPForm() {
 
                 <div>
                   <label htmlFor="rsvp-phone" className="block text-sm font-medium text-w-text mb-2">
-                    Số điện thoại *
+                    Số điện thoại
                   </label>
                   <input
                     id="rsvp-phone"
@@ -207,8 +207,7 @@ export function RSVPForm() {
                     inputMode="tel"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="0900 000 000"
-                    required
+                    placeholder="Không bắt buộc"
                     autoComplete="tel"
                     aria-invalid={phoneError ? true : undefined}
                     aria-describedby={phoneError ? 'rsvp-phone-error' : undefined}

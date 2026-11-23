@@ -19,6 +19,7 @@ import type { GalleryImage } from '@/lib/gallery'
 import { getPublicImageSize } from '@/lib/image-size'
 import { isOptimizableImage } from '@/lib/media-src'
 import { KEEP_DAYS } from '@/lib/archive'
+import { THEME_SWITCH_ENABLED } from '@/lib/themes'
 import { deriveWedding } from '@/lib/wedding-model'
 
 /** Bộ tối ưu ảnh chỉ nhớ theo đường dẫn. Gắn thời điểm sửa file để chép đè cùng tên vẫn ra ảnh mới. */
@@ -61,7 +62,7 @@ export function WeddingSite({
 
   return (
     <>
-      {content.opening !== 'trang' && <InvitationCover />}
+      {content.opening !== 'trang' && <InvitationCover allowThemeCycle={THEME_SWITCH_ENABLED} />}
       <AutoTour />
       {trackOpens && <GuestOpenTracker />}
       <div className="paper-grain" aria-hidden />
@@ -107,7 +108,7 @@ export function WeddingSite({
         <GiftSection model={model} />
       </main>
       <WeddingFooter />
-      <FloatingActions music={model.music} />
+      <FloatingActions music={model.music} allowThemeCycle={THEME_SWITCH_ENABLED} />
       <Toaster />
     </>
   )

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { HERO_IMAGE, WEDDING } from '@/lib/constants'
 import { isOptimizableImage } from '@/lib/media-src'
 
-const SIZES = '(min-width: 896px) 380px, (min-width: 768px) 45vw, 92vw'
+const SIZES = '(min-width: 1024px) 520px, (min-width: 768px) 50vw, 96vw'
 
 export function HeroPhoto({
   className = '',

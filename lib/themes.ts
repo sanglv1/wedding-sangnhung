@@ -39,12 +39,16 @@ export type ThemeId = keyof typeof THEMES
 export const DEFAULT_THEME: ThemeId = 'bordeaux'
 export const THEME_STORAGE_KEY = 'wedding-theme'
 export const THEME_ORDER = Object.keys(THEMES) as ThemeId[]
+/** Tạm đóng nút đổi màu. Bật lại thì khách chọn màu được như trước. */
+export const THEME_SWITCH_ENABLED = false
 
 export function isThemeId(value: unknown): value is ThemeId {
   return typeof value === 'string' && value in THEMES
 }
 
-/** Chạy trước khi trang hiển thị để không bị nháy theme mặc định */
-export const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');if(t&&${JSON.stringify(
-  THEME_ORDER,
-)}.indexOf(t)>-1)document.documentElement.dataset.theme=t}catch(e){}`
+/** Chạy trước khi trang hiển thị để không bị nháy theme mặc định. Tắt công tắc thì bỏ màu đã lưu trên máy khách. */
+export const THEME_INIT_SCRIPT = THEME_SWITCH_ENABLED
+  ? `try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');if(t&&${JSON.stringify(
+      THEME_ORDER,
+    )}.indexOf(t)>-1)document.documentElement.dataset.theme=t}catch(e){}`
+  : `try{document.documentElement.dataset.theme='${DEFAULT_THEME}'}catch(e){}`
