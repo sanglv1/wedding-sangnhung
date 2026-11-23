@@ -96,7 +96,7 @@ function addressLines(address: string) {
 
 function HeartDay({ day }: { day: number }) {
   return (
-    <span className="relative inline-flex h-7 w-7 items-center justify-center">
+    <span className="relative inline-flex h-7 w-7 items-center justify-center" aria-label={`${day}, ngày bữa cơm`}>
       <svg viewBox="0 0 24 22" className="absolute inset-0 h-full w-full text-w-line-strong" aria-hidden>
         <path
           fill="currentColor"
@@ -104,6 +104,17 @@ function HeartDay({ day }: { day: number }) {
         />
       </svg>
       <span className="relative text-[0.68rem] font-semibold text-w-bg">{day}</span>
+    </span>
+  )
+}
+
+function RingDay({ day }: { day: number }) {
+  return (
+    <span
+      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-w-line-strong text-[0.95rem] text-w-strong"
+      aria-label={`${day}, ngày hôn lễ`}
+    >
+      {day}
     </span>
   )
 }
@@ -119,6 +130,11 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
   const lunar = meal ? mealLunar(wedding.ceremony.lunarDate, wedding.startISO, meal.start) : ''
   const calendar = meal ? mealCalendar(model) : ''
   const cells = meal ? monthCells(meal.year, meal.month) : []
+  const ceremony = partyDate(wedding.startISO)
+  const ceremonyDay =
+    ceremony && meal && ceremony.year === meal.year && ceremony.month === meal.month && ceremony.day !== meal.day
+      ? ceremony.day
+      : null
 
   return (
     <section id="lich-trinh" className="scroll-mt-16 py-8 sm:py-[calc(4rem*2/3)] md:py-[calc(5rem*2/3)]">
@@ -161,7 +177,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                 <div className="grid grid-cols-7 text-[0.95rem] text-w-text">
                   {cells.map((day, index) => (
                     <span key={`${day ?? 'x'}-${index}`} className="flex h-9 items-center justify-center">
-                      {day === meal.day ? <HeartDay day={day} /> : day}
+                      {day === meal.day ? <HeartDay day={day} /> : day === ceremonyDay ? <RingDay day={day} /> : day}
                     </span>
                   ))}
                 </div>
