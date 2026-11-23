@@ -177,7 +177,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
                 <div className="grid grid-cols-7 text-[0.95rem] text-w-text">
                   {cells.map((day, index) => (
                     <span key={`${day ?? 'x'}-${index}`} className="flex h-9 items-center justify-center">
-                      {day === meal.day ? <HeartDay day={day} /> : day === ceremonyDay ? <RingDay day={day} /> : day}
+                      {day === meal.day ? <HeartDay day={day} /> : day != null && day === ceremonyDay ? <RingDay day={day} /> : day}
                     </span>
                   ))}
                 </div>
