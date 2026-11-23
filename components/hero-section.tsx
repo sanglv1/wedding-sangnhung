@@ -20,7 +20,7 @@ function ScrollHint() {
 export function HeroSection({ model = CLASSIC_MODEL }: { model?: WeddingModel }) {
   const { wedding: w } = model
   return (
-    <section className="relative z-[1] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20">
+    <section className="relative z-[1] pt-20 pb-8 sm:pt-24 sm:pb-[calc(4rem*2/3)] md:pt-28 md:pb-[calc(5rem*2/3)]">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <TiltCard className="hero-card-in">
           <article className="invite-fold grid md:grid-cols-2 lg:grid-cols-[minmax(0,1.42fr)_minmax(0,1fr)]">

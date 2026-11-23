@@ -92,7 +92,7 @@ export function WeddingSite({
           <GallerySection images={gallery} brand={{ groom: names.groomBrand, bride: names.brideBrand, date: names.dateShort }} />
         )}
         {archived ? (
-          <section className="mx-auto max-w-xl px-4 py-12 text-center sm:py-16 md:py-20">
+          <section className="mx-auto max-w-xl px-4 py-8 text-center sm:py-[calc(4rem*2/3)] md:py-[calc(5rem*2/3)]">
             <h2 className="font-sans text-3xl font-medium tracking-wide text-w-strong">Thiệp đã khép</h2>
             <p className="mt-3 text-sm leading-7 text-w-soft">
               Đã qua {KEEP_DAYS} ngày sau lễ. Khách vẫn đọc được thiệp, và không gửi thêm xác nhận hay lời chúc.

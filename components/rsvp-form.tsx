@@ -150,7 +150,7 @@ export function RSVPForm() {
   const isAttending = formData.attendance === 'yes'
 
   return (
-    <section id="xac-nhan" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
+    <section id="xac-nhan" className="scroll-mt-16 py-8 sm:py-[calc(4rem*2/3)] md:py-[calc(5rem*2/3)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <SectionFrame>
           <SectionHeading description="Vui lòng xác nhận để gia đình chuẩn bị chu đáo nhất">

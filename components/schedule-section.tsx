@@ -121,7 +121,7 @@ export function ScheduleSection({ model = CLASSIC_MODEL }: { model?: WeddingMode
   const cells = meal ? monthCells(meal.year, meal.month) : []
 
   return (
-    <section id="lich-trinh" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
+    <section id="lich-trinh" className="scroll-mt-16 py-8 sm:py-[calc(4rem*2/3)] md:py-[calc(5rem*2/3)]">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <SectionFrame className="text-center">
           <SectionHeading>{wedding.intimateMeal.name || 'Bữa cơm thân mật'}</SectionHeading>

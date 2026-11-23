@@ -80,7 +80,7 @@ export function GallerySection({
 
   return (
     <>
-      <section id="khoanh-khac" className="scroll-mt-16 py-12 sm:py-16 md:py-20">
+      <section id="khoanh-khac" className="scroll-mt-16 py-8 sm:py-[calc(4rem*2/3)] md:py-[calc(5rem*2/3)]">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
           <SectionFrame>
             <SectionHeading description="Những khoảnh khắc của chúng mình">Khoảnh khắc</SectionHeading>
