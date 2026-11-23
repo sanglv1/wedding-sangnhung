@@ -14,7 +14,7 @@ export function sideParam(side: GuestSide) {
   return side === 'groom' ? 'trai' : 'gai'
 }
 
-/** Tên khách mời từ link dạng ?to=Anh%20Minh - dùng để cá nhân hóa thiệp */
+/** Tên khách mời từ link dạng ?to=Anh Minh - dùng để cá nhân hóa thiệp */
 export function readGuestName(search: string): string | null {
   const raw = new URLSearchParams(search).get('to')
   if (!raw) return null
@@ -30,9 +30,15 @@ export function guestKey(name: string) {
 /** Link "Mở thử" của người quản lý có thêm tham số này để không tính là khách đã mở */
 export const PREVIEW_PARAM = 'xem-thu'
 
+/** Giữ chữ và dấu tiếng Việt. Dấu cách thành +, chỉ mã hóa ký tự làm gãy query. */
+function readableQueryValue(value: string) {
+  return value.replace(/[&=#?%+]/g, (char) => encodeURIComponent(char)).replace(/ /g, '+')
+}
+
 export function guestLink(origin: string, name: string, preview = false, path = '/', side?: GuestSide | null) {
-  const params = new URLSearchParams({ to: name })
-  if (side) params.set('nha', sideParam(side))
-  if (preview) params.set(PREVIEW_PARAM, '1')
-  return `${origin}${path}?${params}`
+  const guest = name.normalize('NFC').replace(/\s+/g, ' ').trim()
+  const parts = [`to=${readableQueryValue(guest)}`]
+  if (side) parts.push(`nha=${sideParam(side)}`)
+  if (preview) parts.push(`${PREVIEW_PARAM}=1`)
+  return `${origin}${path}?${parts.join('&')}`
 }
