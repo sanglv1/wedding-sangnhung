@@ -58,6 +58,7 @@ function Shot({
         priority={priority}
         className="object-cover"
         style={image.focus ? { objectPosition: image.focus } : undefined}
+        quality={90}
         sizes={sizes}
         unoptimized={!isOptimizableImage(image.src)}
       />
@@ -92,7 +93,7 @@ export function GallerySection({
                       <Shot
                         key={image.src + i}
                         image={image}
-                        sizes="(max-width: 768px) 30vw, 200px"
+                        sizes="(max-width: 768px) 34vw, 480px"
                         onOpen={() => setLightboxIndex(leadCount + i)}
                       />
                     ))}
@@ -104,7 +105,7 @@ export function GallerySection({
                       key={image.src + i}
                       image={image}
                       priority={i === 0}
-                      sizes="(max-width: 768px) 68vw, 640px"
+                      sizes="(max-width: 768px) 68vw, 1200px"
                       className={
                         i === 0 && lead.length > 1
                           ? styles.featureTop
