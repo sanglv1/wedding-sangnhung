@@ -23,11 +23,11 @@ export function HeroSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
     <section className="relative z-[1] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <TiltCard className="hero-card-in">
-          <article className="invite-fold grid md:grid-cols-2">
-            <div className="invite-photo relative flex">
+          <article className="invite-fold grid md:grid-cols-2 lg:grid-cols-[minmax(0,1.42fr)_minmax(0,1fr)]">
+            <div className="invite-photo relative flex items-center">
               <HeroPhoto
                 framed={false}
-                className="aspect-[4/5] w-full md:aspect-auto md:h-full md:min-h-[24rem]"
+                className="aspect-[2/3] w-full"
                 hero={model.hero}
                 groomShort={w.groomShort}
                 brideShort={w.brideShort}

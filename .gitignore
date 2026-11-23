@@ -14,6 +14,9 @@ next.user-config.*
 # Tài khoản và thiệp khi chạy local, chưa gắn Redis
 data/
 
+# Ảnh gốc vừa tải lên, bản trong public/gallery đã thu nhỏ để vẫn nét
+assets/anh-goc/
+
 # Common ignores
 node_modules/
 .next/

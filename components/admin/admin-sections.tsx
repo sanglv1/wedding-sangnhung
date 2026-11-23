@@ -307,7 +307,7 @@ export function ImagesSection({ content, update }: SectionProps) {
     <AdminSection
       id="anh"
       title="Ảnh thiệp & album"
-      description="Ảnh bên trái của thư mời. Album hiện ở phần Khoảnh khắc. Ảnh tải lên lưu vào public/gallery, không ghi đè ảnh cũ."
+      description="Ảnh bìa chỉ hiện bên trái thư mời, không đưa vào album. Album thêm ảnh khác ở dưới. Ảnh tải lên lưu vào public/gallery, không ghi đè ảnh cũ."
     >
       <div>
         <p className="text-sm font-medium text-stone-700">Ảnh bìa</p>
@@ -346,6 +346,7 @@ export function ImagesSection({ content, update }: SectionProps) {
             onUploaded={([path]) =>
               update((d) => {
                 d.hero = { src: path, focus: '50% 40%' }
+                d.gallery = d.gallery.filter((photo) => photo.src !== path)
               })
             }
           />
@@ -420,7 +421,9 @@ export function ImagesSection({ content, update }: SectionProps) {
                     disabled={hero.src === img.src}
                     onClick={() =>
                       update((d) => {
-                        d.hero = { src: img.src, focus: '50% 40%' }
+                        const src = d.gallery[i].src
+                        d.hero = { src, focus: d.gallery[i].focus || '50% 40%' }
+                        d.gallery = d.gallery.filter((photo) => photo.src !== src)
                       })
                     }
                   >

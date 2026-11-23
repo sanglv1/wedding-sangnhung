@@ -252,7 +252,7 @@ export function GiftSection({ model = CLASSIC_MODEL }: { model?: WeddingModel })
             </SectionHeading>
 
             <Reveal delay={120} className="flex flex-col items-center">
-              <div className={`grid w-full gap-4 sm:gap-6 ${sides.length > 1 ? 'max-w-[22rem] grid-cols-2' : 'max-w-[11rem]'}`}>
+              <div className={`grid w-full gap-4 sm:gap-8 ${sides.length > 1 ? 'max-w-xl grid-cols-2 sm:max-w-2xl' : 'max-w-[16rem]'}`}>
                 {sides.map((side, i) => (
                   <div key={side.key} className="wenv-float flex justify-center" style={{ animationDelay: `${i * 0.45}s` }}>
                     <RedEnvelope side={side} onOpen={open(i)} />

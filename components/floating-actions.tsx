@@ -8,7 +8,7 @@ import { useWeddingTheme } from '@/hooks/use-wedding-theme'
 import { BACKGROUND_MUSIC } from '@/lib/music'
 
 const btnClass =
-  'theme-floating-btn w-11 h-11 rounded-full shadow-lg border flex items-center justify-center active:scale-95 transition-all touch-manipulation focus:outline-none'
+  'theme-floating-btn h-10 w-10 rounded-full border shadow-lg flex items-center justify-center active:scale-95 transition-all touch-manipulation focus:outline-none sm:h-11 sm:w-11'
 
 export function FloatingActions({
   music = BACKGROUND_MUSIC,
@@ -24,7 +24,7 @@ export function FloatingActions({
   if (!allowThemeCycle && !canPlay) return null
 
   return (
-    <div className="fixed z-40 right-4 sm:right-6 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] sm:bottom-6 flex flex-col gap-2">
+    <div className="fixed z-[60] right-[4.25rem] top-[calc(env(safe-area-inset-top)+0.55rem)] flex flex-row gap-1.5 sm:bottom-6 sm:right-6 sm:top-auto sm:z-40 sm:flex-col sm:gap-2">
       {toastKey > 0 && (
         <span key={toastKey} className="theme-toast" role="status">
           {themeName}

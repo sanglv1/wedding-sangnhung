@@ -91,9 +91,10 @@ export function deriveWedding(content: WeddingContent): WeddingModel {
   const timeline = (content.story.timeline ?? [])
     .map((item) => ({ date: item.date.trim(), event: item.event.trim() }))
     .filter((item) => item.date || item.event)
+  const heroSrc = safeMediaUrl(content.hero.src)
   const gallery = (content.gallery ?? []).flatMap((photo) => {
     const src = safeMediaUrl(photo.src)
-    if (!src) return []
+    if (!src || src === heroSrc) return []
     const image: GalleryImage = {
       src,
       alt: photo.alt.trim() || 'Ảnh cưới',

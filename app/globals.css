@@ -1025,6 +1025,8 @@
   }
   .gallery-progress-track {
     position: relative;
+    display: block;
+    width: 100%;
     flex: 1;
     height: 2px;
     overflow: hidden;
@@ -1180,6 +1182,8 @@
   .invite-photo,
   .invite-paper {
     background-color: transparent;
+    background-image: radial-gradient(color-mix(in srgb, var(--w-line-strong) 12%, transparent) 1px, transparent 1px);
+    background-size: 14px 14px;
   }
   /* Ô ảnh: ảnh tự lấp đầy hoặc hiện trọn (xem components/hero-photo.tsx) */
   .invite-photo-window {
@@ -1191,7 +1195,7 @@
   }
   .hero-photo-plain {
     border-radius: 0.35rem;
-    box-shadow: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--w-line-strong) 78%, transparent);
   }
   .invite-photo-backdrop {
     object-fit: cover;
@@ -1200,31 +1204,33 @@
   }
   .invite-paper {
     position: relative;
-    background-image: radial-gradient(color-mix(in srgb, var(--w-line-strong) 12%, transparent) 1px, transparent 1px);
-    background-size: 14px 14px;
   }
-  /* Nếp gấp giữa hai trang: ngang trên mobile, dọc trên desktop */
+  /* Nếp gấp giữa hai trang: bóng nhẹ, không lấy màu chữ kẻo thành vệt trắng trên giấy tối */
   .invite-paper::before {
     content: '';
     position: absolute;
     inset: 0 0 auto 0;
-    height: 18px;
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--w-strong) 16%, transparent), transparent);
+    height: 14px;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.16), transparent);
     pointer-events: none;
   }
   @media (min-width: 768px) {
+    .invite-photo,
+    .invite-paper {
+      min-width: 0;
+    }
     .invite-paper::before {
       inset: 0 auto 0 0;
-      width: 22px;
+      width: 16px;
       height: auto;
-      background: linear-gradient(to right, color-mix(in srgb, var(--w-strong) 18%, transparent), transparent);
+      background: linear-gradient(to right, rgb(0 0 0 / 0.2), transparent);
     }
     .invite-photo::after {
       content: '';
       position: absolute;
       inset: 0 0 0 auto;
-      width: 22px;
-      background: linear-gradient(to left, color-mix(in srgb, var(--w-strong) 14%, transparent), transparent);
+      width: 14px;
+      background: linear-gradient(to left, rgb(0 0 0 / 0.12), transparent);
       pointer-events: none;
     }
   }
@@ -1535,14 +1541,14 @@
 
   .wenv {
     position: relative;
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
     width: 100%;
-    max-width: 10rem;
     aspect-ratio: 5 / 7;
-    padding: 0 0.5rem 1.1rem;
+    padding: 0 0.75rem 1.35rem;
     overflow: hidden;
     border-radius: 1rem;
     background: linear-gradient(165deg, #d93b47, #a71d2b 55%, #7c1222);
@@ -1590,12 +1596,12 @@
     translate: -50% -50%;
     display: grid;
     place-items: center;
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 26cqi;
+    height: 26cqi;
     border-radius: 9999px;
     background: radial-gradient(circle at 35% 30%, #fde68a, #d4a574 60%, #a16207);
     color: #7f1d1d;
-    font-size: 1.2rem;
+    font-size: 12cqi;
     font-weight: 700;
     box-shadow:
       0 4px 10px rgb(0 0 0 / 0.35),
@@ -1603,17 +1609,17 @@
     animation: gift-pulse 2.2s ease-out infinite;
   }
   .wenv-role {
-    font-size: 0.62rem;
+    font-size: clamp(0.62rem, 5cqi, 0.8rem);
     font-weight: 600;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: rgb(253 230 138 / 0.85);
   }
   .wenv-name {
-    margin-top: 0.2rem;
+    margin-top: 0.15rem;
     font-family: var(--font-script), cursive;
-    font-size: 1.45rem;
-    line-height: 1.15;
+    font-size: clamp(1.35rem, 15cqi, 2.5rem);
+    line-height: 1.1;
     text-shadow: 0 2px 4px rgb(0 0 0 / 0.3);
   }
 
@@ -2478,20 +2484,7 @@
       clip-path 1.3s cubic-bezier(0.65, 0, 0.2, 1) var(--reveal-delay, 0ms);
   }
 
-  /* Ảnh bìa phóng nhẹ khi cuộn qua */
-  @supports (animation-timeline: view()) {
-    .invite-photo-window img {
-      animation: hero-parallax linear both;
-      animation-timeline: view();
-      animation-range: exit 0% exit 100%;
-    }
-  }
-  @keyframes hero-parallax {
-    to {
-      scale: 1.1;
-      translate: 0 4%;
-    }
-  }
+  /* Ảnh bìa nằm trọn trong khung, không phóng khi cuộn kẻo bị cắt mép */
 
   /* Vân giấy mịn trên nền trang (nằm sau nội dung) */
   .paper-grain {

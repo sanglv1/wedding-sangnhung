@@ -69,38 +69,44 @@
   },
   "hero": {
     "src": "/gallery/mau/editorial-bia.jpg",
-    "focus": "50% 42%"
+    "focus": "50% 30%"
   },
   "gallery": [
     {
-      "src": "/gallery/mau/editorial-bia.jpg",
-      "alt": "Ảnh cổng cưới Lương Sáng và Trần Nhung",
+      "src": "/gallery/mau/editorial-6.jpg",
+      "alt": "Lương Sáng và Trần Nhung nắm tay trước rèm trắng",
       "caption": "",
-      "focus": "50% 42%"
+      "focus": "50% 28%"
     },
     {
       "src": "/gallery/mau/editorial-2.jpg",
-      "alt": "Ảnh gia đình Lương Sáng và Trần Nhung",
+      "alt": "Ảnh cưới Lương Sáng và Trần Nhung trên nền trắng",
       "caption": "",
-      "focus": "50% 35%"
+      "focus": "50% 26%"
     },
     {
       "src": "/gallery/mau/editorial-1.jpg",
-      "alt": "Đoàn đưa lễ vào nhà",
-      "caption": "",
-      "focus": "50% 30%"
-    },
-    {
-      "src": "/gallery/mau/editorial-3.jpg",
-      "alt": "Họ hàng trong buổi tiệc",
+      "alt": "Lương Sáng nhìn Trần Nhung giữa rèm và hoa tím",
       "caption": "",
       "focus": "50% 28%"
     },
     {
       "src": "/gallery/mau/editorial-4.jpg",
-      "alt": "Họ hàng trong buổi tiệc",
+      "alt": "Lương Sáng và Trần Nhung trong tà áo dài kem",
       "caption": "",
-      "focus": "50% 28%"
+      "focus": "50% 30%"
+    },
+    {
+      "src": "/gallery/mau/editorial-3.jpg",
+      "alt": "Hai người cùng xem một chiếc máy ảnh giữa vườn",
+      "caption": "",
+      "focus": "50% 32%"
+    },
+    {
+      "src": "/gallery/mau/editorial-5.jpg",
+      "alt": "Trần Nhung đọc lá thư giữa vườn xanh",
+      "caption": "",
+      "focus": "50% 30%"
     }
   ],
   "gift": {

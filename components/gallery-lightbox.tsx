@@ -355,7 +355,7 @@ function ZoomableSlide({ image, zoomed, onZoomedChange, onSwipe, onClose }: Zoom
           transition: gesturing ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1)',
         }}
       >
-        <Image src={image.src} alt={image.alt} fill draggable={false} className="object-contain" sizes="100vw" unoptimized={!isOptimizableImage(image.src)} />
+        <Image src={image.src} alt={image.alt} fill draggable={false} quality={90} className="object-contain" sizes="100vw" unoptimized={!isOptimizableImage(image.src)} />
       </div>
     </div>
   )
