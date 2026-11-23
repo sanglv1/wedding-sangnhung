@@ -32,16 +32,17 @@ export function useInView<T extends HTMLElement = HTMLDivElement>(threshold = 0.
       io.observe(ref.current)
     }
 
-    // Đừng chạy khi phong bì còn che: khách không thấy, và lúc mở ra thì hiệu ứng đã hết
-    if (!document.querySelector('.wax-root')) {
+    // Chạy ngay khi phong bì chớm mở, kẻo đợi nắp trượt hết thì chữ đã lỡ nhịp
+    const ready = () => document.documentElement.dataset.opened === 'true' || !document.querySelector('.wax-root')
+    if (ready()) {
       arm()
     } else {
       mo = new MutationObserver(() => {
-        if (document.querySelector('.wax-root')) return
+        if (!ready()) return
         mo?.disconnect()
         arm()
       })
-      mo.observe(document.body, { childList: true, subtree: true })
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-opened'] })
     }
 
     return () => {

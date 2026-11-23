@@ -73,8 +73,8 @@
   },
   "gallery": [
     {
-      "src": "/gallery/mau/editorial-6.jpg",
-      "alt": "Lương Sáng và Trần Nhung nắm tay trước rèm trắng",
+      "src": "/gallery/mau/editorial-1.jpg",
+      "alt": "Lương Sáng nhìn Trần Nhung giữa rèm và hoa tím",
       "caption": "",
       "focus": "50% 28%"
     },
@@ -85,22 +85,16 @@
       "focus": "50% 26%"
     },
     {
-      "src": "/gallery/mau/editorial-1.jpg",
-      "alt": "Lương Sáng nhìn Trần Nhung giữa rèm và hoa tím",
+      "src": "/gallery/mau/editorial-3.jpg",
+      "alt": "Hai người cùng xem một chiếc máy ảnh giữa vườn",
       "caption": "",
-      "focus": "50% 28%"
+      "focus": "50% 32%"
     },
     {
       "src": "/gallery/mau/editorial-4.jpg",
       "alt": "Lương Sáng và Trần Nhung trong tà áo dài kem",
       "caption": "",
       "focus": "50% 30%"
-    },
-    {
-      "src": "/gallery/mau/editorial-3.jpg",
-      "alt": "Hai người cùng xem một chiếc máy ảnh giữa vườn",
-      "caption": "",
-      "focus": "50% 32%"
     },
     {
       "src": "/gallery/mau/editorial-5.jpg",

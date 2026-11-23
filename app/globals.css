@@ -1780,10 +1780,10 @@
     opacity: 0;
     filter: blur(6px);
     transition:
-      opacity 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
-      translate 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
-      scale 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
-      filter 1.05s cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
+      opacity var(--reveal-time, 1.05s) cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
+      translate var(--reveal-time, 1.05s) cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
+      scale var(--reveal-time, 1.05s) cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
+      filter var(--reveal-time, 1.05s) cubic-bezier(0.16, 0.84, 0.24, 1) var(--reveal-delay, 0ms),
       box-shadow 0.25s ease,
       transform 0.25s ease,
       border-color 0.25s ease;
@@ -2347,8 +2347,8 @@
     animation-play-state: paused;
   }
   html[data-opened] .hero-card-in {
-    animation-delay: 0.35s;
-    animation-duration: 1.15s;
+    animation-delay: 0s;
+    animation-duration: 0.45s;
   }
 
   /* Tiêu đề: vệt ánh kim lướt qua một lần khi cuộn tới */
@@ -2580,6 +2580,11 @@
 .wax-root[data-stage='opening'] {
   pointer-events: none;
   animation: wax-fade 0.48s ease 1.08s forwards;
+}
+/* Nền che thiệp nhường chỗ ngay khi nắp chớm tách, để chữ chạy trong lúc mở */
+.wax-root[data-stage='opening'] .wax-backdrop,
+.wax-root[data-stage='opening'] .wax-paper {
+  animation: wax-fade 0.28s ease forwards;
 }
 @keyframes wax-fade {
   to {
