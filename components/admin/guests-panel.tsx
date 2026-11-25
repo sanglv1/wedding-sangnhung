@@ -10,7 +10,46 @@ import { fetchRsvps, type RsvpEntry } from '@/lib/rsvp'
 import { isPhoneDevice, smsHref } from '@/lib/share-invite'
 import { Badge, BTN, BTN_DANGER, copyText, dateFormatter, downloadCsv, errorText, FilterChips, StatCard } from './shared'
 
-type Filter = 'all' | 'unsent' | 'sent' | 'groom' | 'bride' | 'unassigned' | 'unopened' | 'opened' | 'replied' | 'unreplied'
+type Filter = 'all' | 'unsent' | 'sent' | 'unopened' | 'opened' | 'replied' | 'unreplied'
+type HouseTab = 'groom' | 'bride' | 'none'
+
+const HOUSE_PARAM: Record<HouseTab, string> = {
+  groom: 'chu-re',
+  bride: 'co-dau',
+  none: 'chua-chon',
+}
+
+function readHouseTab(): HouseTab | null {
+  const raw = new URLSearchParams(window.location.search).get('nha')
+  if (raw === 'chu-re') return 'groom'
+  if (raw === 'co-dau') return 'bride'
+  if (raw === 'chua-chon') return 'none'
+  return null
+}
+
+function inHouse(guest: { side?: GuestSide }, house: HouseTab) {
+  if (house === 'groom') return guest.side === 'groom'
+  if (house === 'bride') return guest.side === 'bride'
+  return !guest.side
+}
+
+function audience(house: HouseTab) {
+  if (house === 'bride') return 'khách cô dâu'
+  if (house === 'none') return 'khách chưa chọn nhà'
+  return 'khách chú rể'
+}
+
+function describePending(house: HouseTab, guests: { side?: GuestSide | '' }[]) {
+  if (house !== 'none') return audience(house)
+  const sides = new Set(guests.map((guest) => guest.side || ''))
+  if (sides.size === 1) {
+    const side = [...sides][0]
+    if (side === 'groom') return 'khách chú rể'
+    if (side === 'bride') return 'khách cô dâu'
+    return audience('none')
+  }
+  return 'khách'
+}
 
 function houseBits(side: GuestSide | '' | undefined) {
   if (side !== 'groom' && side !== 'bride') return { nha: '', diachi: '', gio: '' }
@@ -59,7 +98,7 @@ function readTemplate() {
   }
 }
 
-type InviteRow = GuestRecord & { link: string; preview: string; message: string; rsvp?: RsvpEntry }
+type InviteRow = GuestRecord & { link: string; preview: string; message: string; rsvp?: RsvpEntry; duplicate: boolean }
 
 export function GuestsPanel({ password }: { password: string }) {
   const origin = useSyncExternalStore(noopSubscribe, () => window.location.origin, () => '')
@@ -79,6 +118,24 @@ export function GuestsPanel({ password }: { password: string }) {
   const [namesText, setNamesText] = useState('')
   const [batchSide, setBatchSide] = useState<GuestSide | ''>('')
   const [filter, setFilter] = useState<Filter>('all')
+  const urlHouse = useSyncExternalStore(noopSubscribe, readHouseTab, () => null as HouseTab | null)
+  const [pickedHouse, setPickedHouse] = useState<HouseTab | null>(null)
+  const inferredHouse: HouseTab = guests.some((guest) => guest.side === 'groom')
+    ? 'groom'
+    : guests.some((guest) => guest.side === 'bride')
+      ? 'bride'
+      : guests.some((guest) => !guest.side)
+        ? 'none'
+        : 'groom'
+  const house = pickedHouse ?? urlHouse ?? inferredHouse
+
+  const selectHouse = (id: HouseTab) => {
+    setPickedHouse(id)
+    const params = new URLSearchParams(window.location.search)
+    params.set('tab', params.get('tab') || 'khach-moi')
+    params.set('nha', HOUSE_PARAM[id])
+    window.history.replaceState(null, '', `?${params}`)
+  }
   const [copied, setCopied] = useState<string | null>(null)
   const [deletingKey, setDeletingKey] = useState<string | null>(null)
   const [pasteHint, setPasteHint] = useState('')
@@ -104,6 +161,11 @@ export function GuestsPanel({ password }: { password: string }) {
     refresh()
   }, [refresh])
 
+  useEffect(() => {
+    if (loading || pickedHouse || urlHouse) return
+    setPickedHouse(inferredHouse)
+  }, [loading, pickedHouse, urlHouse, inferredHouse])
+
   const rsvpByGuest = useMemo(() => {
     const map = new Map<string, RsvpEntry>()
     for (const r of rsvps) {
@@ -113,33 +175,52 @@ export function GuestsPanel({ password }: { password: string }) {
     return map
   }, [rsvps])
 
+  const nameOwners = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const guest of guests) {
+      const key = guestKey(guest.name)
+      map.set(key, (map.get(key) ?? 0) + 1)
+    }
+    return map
+  }, [guests])
+
+  const houseGuests = useMemo(() => guests.filter((guest) => inHouse(guest, house)), [guests, house])
+
+  const duplicateNames = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const guest of houseGuests) {
+      const key = guestKey(guest.name)
+      map.set(key, (map.get(key) ?? 0) + 1)
+    }
+    return map
+  }, [houseGuests])
+
   const rows = useMemo(
     () =>
-      guests.map((g) => {
-        const link = guestLink(origin, g.name, false, '/', g.side)
-        const house = houseBits(g.side)
+      houseGuests.map((g) => {
+        const link = guestLink(origin, g.name, false, '/', g.side, g.key)
+        const place = houseBits(g.side)
+        const nameKey = guestKey(g.name)
         return {
           ...g,
           link,
-          preview: guestLink(origin, g.name, true, '/', g.side),
+          preview: guestLink(origin, g.name, true, '/', g.side, g.key),
           message: template
             .replaceAll('{ten}', g.name)
             .replaceAll('{link}', link)
-            .replaceAll('{nha}', house.nha)
-            .replaceAll('{diachi}', house.diachi)
-            .replaceAll('{gio}', house.gio),
-          rsvp: rsvpByGuest.get(g.key),
+            .replaceAll('{nha}', place.nha)
+            .replaceAll('{diachi}', place.diachi)
+            .replaceAll('{gio}', place.gio),
+          rsvp: (nameOwners.get(nameKey) ?? 0) === 1 ? rsvpByGuest.get(nameKey) : undefined,
+          duplicate: (duplicateNames.get(nameKey) ?? 0) > 1,
         }
       }),
-    [guests, origin, template, rsvpByGuest],
+    [houseGuests, origin, template, rsvpByGuest, nameOwners, duplicateNames],
   )
 
   const shown = rows.filter((r) => {
     if (filter === 'unsent') return !r.sentAt
     if (filter === 'sent') return Boolean(r.sentAt)
-    if (filter === 'groom') return r.side === 'groom'
-    if (filter === 'bride') return r.side === 'bride'
-    if (filter === 'unassigned') return !r.side
     if (filter === 'unopened') return !r.opens
     if (filter === 'opened') return Boolean(r.opens)
     if (filter === 'replied') return Boolean(r.rsvp)
@@ -149,9 +230,17 @@ export function GuestsPanel({ password }: { password: string }) {
 
   const imported = useMemo(() => parseGuestImport(namesText), [namesText])
   const pending = useMemo(
-    () => imported.guests.map((guest) => ({ ...guest, side: guest.side || batchSide })),
-    [imported.guests, batchSide],
+    () =>
+      imported.guests.map((guest) => ({
+        ...guest,
+        side: house === 'none' ? guest.side || batchSide : house,
+      })),
+    [imported.guests, batchSide, house],
   )
+  const alreadyListed = useMemo(() => {
+    const names = new Set(houseGuests.map((guest) => guestKey(guest.name)))
+    return pending.filter((guest) => names.has(guestKey(guest.name))).length
+  }, [houseGuests, pending])
   const nextUnsent = rows.find((r) => !r.sentAt)
   const unsentCount = rows.filter((r) => !r.sentAt).length
   const withPhone = pending.filter((g) => g.phone).length
@@ -162,12 +251,13 @@ export function GuestsPanel({ password }: { password: string }) {
     setError('')
     setNotice('')
     try {
-      const { added, filled } = await addGuests(pending, password)
-      const skipped = pending.length - added - filled
-      const parts = [`Đã thêm ${added} khách`]
-      if (filled > 0) parts.push(`bổ sung nhà hoặc số cho ${filled} khách`)
-      if (skipped > 0) parts.push(`${skipped} tên đã có sẵn`)
-      setNotice(`${parts.join(', ')}.`)
+      const { added } = await addGuests(pending, password)
+      const label = describePending(house, pending)
+      setNotice(
+        imported.duplicates > 0
+          ? `Đã thêm ${added} ${label}, trong đó có tên trùng nhau.`
+          : `Đã thêm ${added} ${label}.`,
+      )
       setNamesText('')
       await load()
     } catch (err) {
@@ -208,6 +298,11 @@ export function GuestsPanel({ password }: { password: string }) {
     setError('')
     try {
       await setGuestSide(row.key, password, side)
+      const nextHouse: HouseTab = side === 'bride' ? 'bride' : side === 'groom' ? 'groom' : 'none'
+      if (nextHouse !== house) {
+        const where = nextHouse === 'bride' ? 'khách cô dâu' : nextHouse === 'groom' ? 'khách chú rể' : 'mục chưa chọn nhà'
+        setNotice(`Đã chuyển ${row.name} sang ${where}.`)
+      }
     } catch (err) {
       setGuests((prev) => prev.map((g) => (g.key === row.key ? { ...g, side: previous } : g)))
       setError(errorText(err))
@@ -272,12 +367,12 @@ export function GuestsPanel({ password }: { password: string }) {
   }
 
   const exportCsv = () =>
-    downloadCsv('khach-moi.csv', [
-      ['Tên', 'Số điện thoại', 'Nhà', 'Link mời', 'Đã gửi', 'Đã mở', 'Số lần mở', 'Mở lần cuối', 'Xác nhận', 'Số người'],
+    downloadCsv(house === 'bride' ? 'khach-co-dau.csv' : house === 'none' ? 'khach-chua-chon.csv' : 'khach-chu-re.csv', [
+      ['Tên', 'Số điện thoại', 'Phía', 'Link mời', 'Đã gửi', 'Đã mở', 'Số lần mở', 'Mở lần cuối', 'Xác nhận', 'Số người'],
       ...shown.map((r) => [
         r.name,
         r.phone ?? '',
-        r.side === 'groom' ? 'Nhà trai' : r.side === 'bride' ? 'Nhà gái' : '',
+        r.side === 'groom' ? 'Chú rể' : r.side === 'bride' ? 'Cô dâu' : '',
         r.link,
         r.sentAt ? 'Có' : 'Chưa',
         r.opens ? 'Có' : 'Chưa',
@@ -291,11 +386,36 @@ export function GuestsPanel({ password }: { password: string }) {
   const openedCount = rows.filter((r) => r.opens).length
   const repliedCount = rows.filter((r) => r.rsvp).length
   const sentCount = rows.filter((r) => r.sentAt).length
+  const groomCount = guests.filter((g) => g.side === 'groom').length
+  const brideCount = guests.filter((g) => g.side === 'bride').length
+  const unassignedCount = guests.filter((g) => !g.side).length
+  const houseTabs: { id: HouseTab; label: string; count: number }[] = [
+    { id: 'groom', label: 'Khách chú rể', count: groomCount },
+    { id: 'bride', label: 'Khách cô dâu', count: brideCount },
+  ]
+  if (unassignedCount > 0 || house === 'none') houseTabs.push({ id: 'none', label: 'Chưa chọn nhà', count: unassignedCount })
 
   return (
     <div>
+      <div role="tablist" aria-label="Danh sách khách theo phía" className="flex gap-1 mb-5 border-b border-w-gold/30 overflow-x-auto">
+        {houseTabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={house === tab.id}
+            onClick={() => selectHouse(tab.id)}
+            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+              house === tab.id ? 'border-w-btn text-w-strong' : 'border-transparent text-w-muted hover:text-w-text'
+            }`}
+          >
+            {tab.label}
+            <span className="ml-1.5 tabular-nums">{tab.count}</span>
+          </button>
+        ))}
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        <StatCard label="Khách mời" value={rows.length} />
+        <StatCard label={house === 'bride' ? 'Khách cô dâu' : house === 'none' ? 'Chưa chọn nhà' : 'Khách chú rể'} value={rows.length} />
         <StatCard label="Chưa gửi" value={unsentCount} hint={sentCount > 0 ? `${sentCount} đã gửi` : undefined} />
         <StatCard label="Đã mở thiệp" value={openedCount} hint={`${rows.length - openedCount} chưa mở`} />
         <StatCard label="Đã xác nhận" value={repliedCount} hint={`${rows.length - repliedCount} chưa trả lời`} />
@@ -312,7 +432,7 @@ export function GuestsPanel({ password }: { password: string }) {
       >
         <div>
           <label htmlFor="guest-names" className="block text-sm font-medium text-w-text mb-1.5">
-            Thêm khách: dán từ Excel, mỗi dòng một người, hoặc kéo file .csv / .txt vào đây
+            Thêm {audience(house)}: dán từ Excel, mỗi dòng một người, hoặc kéo file .csv / .txt vào đây
           </label>
           <textarea
             id="guest-names"
@@ -323,21 +443,26 @@ export function GuestsPanel({ password }: { password: string }) {
             className="field-wedding resize-y"
           />
           <p className="mt-1.5 text-xs text-w-muted">
-            Cột tên, số điện thoại và nhà (Nhà trai / Nhà gái) dán từ Excel được nhận cùng lúc. Dòng tiêu đề như “Họ tên”, “SĐT”, “Nhà” sẽ được bỏ qua. Khách chưa chọn nhà nhận thiệp hiện cả hai nhà.
+            {house === 'none'
+              ? 'Cột tên, số điện thoại và nhà (Chú rể / Cô dâu, hoặc Nhà trai / Nhà gái) dán từ Excel được nhận cùng lúc. Dòng tiêu đề sẽ được bỏ qua. Tên trùng vẫn được thêm thành từng khách. Khách chưa chọn nhà nhận thiệp hiện cả hai nhà.'
+              : `Mỗi dòng là một ${audience(house)}, kể cả khi trùng tên. Cột số điện thoại dán từ Excel được nhận cùng lúc. Dòng tiêu đề như “Họ tên”, “SĐT” sẽ được bỏ qua.`}
           </p>
           {pending.length > 0 && (
             <p className="mt-2 text-sm text-w-text">
-              Sẽ thêm {pending.length} khách{withPhone > 0 ? `, ${withPhone} có số điện thoại` : ''}: {previewNames(pending)}
-              {imported.duplicates > 0 ? ` Đã gộp ${imported.duplicates} tên trùng.` : ''}
+              Sẽ thêm {pending.length} {describePending(house, pending)}
+              {withPhone > 0 ? `, ${withPhone} có số điện thoại` : ''}: {previewNames(pending)}
+              {imported.duplicates > 0 ? ` Có ${imported.duplicates} tên trùng, mỗi người vẫn được thêm riêng.` : ''}
+              {alreadyListed > 0 ? ` ${alreadyListed} tên đã có trong tab này; bấm thêm vẫn tạo thêm người, không gộp.` : ''}
               {imported.truncated ? ' Chỉ lấy 500 khách đầu.' : ''}
             </p>
           )}
+          {house === 'none' && (
           <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Gán nhà cho các khách sắp thêm">
             {(
               [
                 ['', 'Chưa chọn nhà'],
-                ['groom', 'Nhà trai'],
-                ['bride', 'Nhà gái'],
+                ['groom', 'Chú rể'],
+                ['bride', 'Cô dâu'],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -351,6 +476,7 @@ export function GuestsPanel({ password }: { password: string }) {
               </button>
             ))}
           </div>
+          )}
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
@@ -359,7 +485,7 @@ export function GuestsPanel({ password }: { password: string }) {
               className="inline-flex items-center gap-1.5 bg-w-btn hover:bg-w-btn-hover text-white font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-60"
             >
               <UserPlus className="w-4 h-4" aria-hidden />
-              {saving ? 'Đang lưu...' : pending.length ? `Thêm ${pending.length} khách` : 'Thêm khách'}
+              {saving ? 'Đang lưu...' : pending.length ? `Thêm ${pending.length} ${describePending(house, pending)}` : `Thêm ${audience(house)}`}
             </button>
             <button type="button" onClick={() => fileRef.current?.click()} className={BTN}>
               <FileUp className="w-4 h-4" aria-hidden />
@@ -442,9 +568,6 @@ export function GuestsPanel({ password }: { password: string }) {
             { id: 'all', label: 'Tất cả' },
             { id: 'unsent', label: 'Chưa gửi' },
             { id: 'sent', label: 'Đã gửi' },
-            { id: 'groom', label: 'Nhà trai' },
-            { id: 'bride', label: 'Nhà gái' },
-            { id: 'unassigned', label: 'Chưa chọn nhà' },
             { id: 'unopened', label: 'Chưa mở' },
             { id: 'opened', label: 'Đã mở' },
             { id: 'unreplied', label: 'Chưa xác nhận' },
@@ -479,7 +602,7 @@ export function GuestsPanel({ password }: { password: string }) {
       )}
       {!loading && shown.length === 0 && !error && (
         <p className="card-wedding rounded-2xl p-8 text-center text-w-muted">
-          {rows.length === 0 ? 'Chưa có khách mời nào. Dán tên hoặc chọn file ở ô phía trên.' : 'Không có khách nào ở mục này.'}
+          {rows.length === 0 ? `Chưa có ${audience(house)}. Dán tên hoặc chọn file ở ô phía trên.` : 'Không có khách nào ở mục này.'}
         </p>
       )}
 
@@ -488,7 +611,7 @@ export function GuestsPanel({ password }: { password: string }) {
           <li key={r.key} className="card-wedding rounded-2xl p-4 sm:p-5">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <p className="font-semibold text-w-strong break-words">{r.name}</p>
-              {r.side === 'groom' ? <Badge tone="gold">Nhà trai</Badge> : r.side === 'bride' ? <Badge tone="gold">Nhà gái</Badge> : <Badge tone="gray">Chưa chọn nhà</Badge>}
+              {r.duplicate && <Badge tone="gray">Trùng tên</Badge>}
               {r.sentAt ? <Badge tone="gold">Đã gửi</Badge> : <Badge tone="gray">Chưa gửi</Badge>}
               {r.opens ? (
                 <Badge tone="green">Đã mở{r.opens.count > 1 ? ` · ${r.opens.count} lần` : ''}</Badge>
@@ -532,12 +655,12 @@ export function GuestsPanel({ password }: { password: string }) {
               <select
                 value={r.side ?? ''}
                 onChange={(e) => assignSide(r, e.target.value)}
-                aria-label={`Nhà của ${r.name}`}
+                aria-label={`Phía của ${r.name}`}
                 className="field-wedding w-auto py-2 text-sm"
               >
                 <option value="">Chưa chọn nhà</option>
-                <option value="groom">Nhà trai</option>
-                <option value="bride">Nhà gái</option>
+                <option value="groom">Chú rể</option>
+                <option value="bride">Cô dâu</option>
               </select>
               <button type="button" onClick={() => markSent(r, !r.sentAt)} className={BTN}>
                 <Check className="w-4 h-4" aria-hidden />

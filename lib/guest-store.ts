@@ -1,4 +1,4 @@
-import { guestKey, type GuestSide } from './guest'
+import { allocateGuestKey, matchGuest, type GuestSide } from './guest'
 import type { GuestOpens, GuestRecord } from './guests'
 import { allowAttempt, hashValues, pipeline } from './redis'
 
@@ -51,52 +51,39 @@ function readDraft(raw: unknown): { name: string; phone: string; side: GuestSide
   return { name, phone, side: readSide(row.side) }
 }
 
-/** Thêm khách. Tên đã có thì giữ nguyên; số hoặc nhà còn trống thì bổ sung, không ghi đè. */
+function takenKeys(raw: unknown) {
+  const taken = new Set<string>()
+  if (!Array.isArray(raw)) return taken
+  for (const key of raw) if (typeof key === 'string' && key) taken.add(key)
+  return taken
+}
+
+/** Thêm từng khách một bản ghi. Cùng tên vẫn tạo thêm người, không gộp. */
 export async function addGuests(names: unknown[]) {
   const now = Date.now()
-  const seen = new Set<string>()
   const drafts = names
     .map(readDraft)
     .filter((d): d is { name: string; phone: string; side: GuestSide | '' } => d !== null)
-    .filter((d) => {
-      const key = guestKey(d.name)
-      if (!key || seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
     .slice(0, MAX_BATCH)
   if (drafts.length === 0) return { added: 0, filled: 0 }
 
-  const records = drafts.map((draft, i) => {
+  const [existing] = await pipeline([['HKEYS', LIST_KEY]])
+  const taken = takenKeys(existing)
+  const records = drafts.flatMap((draft, i) => {
+    const key = allocateGuestKey(draft.name, taken)
+    if (!key) return []
     const record: GuestRecord = {
-      key: guestKey(draft.name),
+      key,
       name: draft.name,
       createdAt: new Date(now + i).toISOString(),
       ...(draft.phone ? { phone: draft.phone } : {}),
       ...(draft.side ? { side: draft.side } : {}),
     }
-    return record
+    return [record]
   })
-  const created = await pipeline(records.map((record) => ['HSETNX', LIST_KEY, record.key, JSON.stringify(record)]))
-  const added = created.filter((result) => Number(result) === 1).length
-
-  const enrich = records.filter((record, i) => Number(created[i]) !== 1 && (record.phone || record.side))
-  if (enrich.length === 0) return { added, filled: 0 }
-
-  const existing = await pipeline(enrich.map((record) => ['HGET', LIST_KEY, record.key]))
-  const updates = existing.flatMap((raw, i) => {
-    if (typeof raw !== 'string') return []
-    const saved = parseJson<GuestRecord>(raw)
-    const incoming = enrich[i]
-    if (!saved || saved.key !== incoming.key) return []
-    const next = { ...saved }
-    if (!saved.phone && incoming.phone) next.phone = incoming.phone
-    if (!saved.side && incoming.side) next.side = incoming.side
-    if (next.phone === saved.phone && next.side === saved.side) return []
-    return [['HSET', LIST_KEY, saved.key, JSON.stringify(next)]]
-  })
-  if (updates.length > 0) await pipeline(updates)
-  return { added, filled: updates.length }
+  if (records.length === 0) return { added: 0, filled: 0 }
+  await pipeline(records.map((record) => ['HSET', LIST_KEY, record.key, JSON.stringify(record)]))
+  return { added: records.length, filled: 0 }
 }
 
 async function patchGuest(key: string, patch: (guest: GuestRecord) => GuestRecord) {
@@ -138,17 +125,22 @@ export async function deleteGuest(key: string) {
   return Number(removed) > 0
 }
 
-/** Ghi nhận khách mở thiệp - chỉ với tên có trong danh sách khách mời */
-export async function recordOpen(name: string) {
-  const key = guestKey(name)
-  const [exists, raw] = await pipeline([
-    ['HEXISTS', LIST_KEY, key],
-    ['HGET', OPENS_KEY, key],
-  ])
-  if (Number(exists) !== 1) return false
+function recordsFromHash(list: unknown): GuestRecord[] {
+  return hashValues(list)
+    .map((raw) => parseJson<GuestRecord>(raw))
+    .filter((guest): guest is GuestRecord => guest !== null && typeof guest.key === 'string')
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
+
+/** Ghi nhận khách mở thiệp. Có mã trên link thì tính đúng người khi trùng tên. */
+export async function recordOpen(name: string, id?: string | null, side?: GuestSide | null) {
+  const [list] = await pipeline([['HGETALL', LIST_KEY]])
+  const target = matchGuest(recordsFromHash(list), name, id, side)
+  if (!target) return false
+  const [raw] = await pipeline([['HGET', OPENS_KEY, target.key]])
   const now = new Date().toISOString()
   const prev = typeof raw === 'string' ? parseJson<GuestOpens>(raw) : null
   const opens: GuestOpens = { first: prev?.first ?? now, last: now, count: (prev?.count ?? 0) + 1 }
-  await pipeline([['HSET', OPENS_KEY, key, JSON.stringify(opens)]])
+  await pipeline([['HSET', OPENS_KEY, target.key, JSON.stringify(opens)]])
   return true
 }

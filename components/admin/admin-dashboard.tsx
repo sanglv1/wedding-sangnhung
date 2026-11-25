@@ -63,7 +63,9 @@ export function AdminDashboard() {
 
   const selectTab = (id: Tab) => {
     setPickedTab(id)
-    window.history.replaceState(null, '', `?tab=${id}`)
+    const params = new URLSearchParams(window.location.search)
+    params.set('tab', id)
+    window.history.replaceState(null, '', `?${params}`)
   }
 
   if (!password) {

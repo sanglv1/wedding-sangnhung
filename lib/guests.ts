@@ -61,11 +61,19 @@ export async function deleteGuest(key: string, password: string) {
   await readJson(res)
 }
 
-export function recordGuestOpen(name: string, endpoint = '/api/guest-open') {
+export function recordGuestOpen(
+  name: string,
+  endpoint = '/api/guest-open',
+  extra?: { id?: string | null; side?: GuestSide | null },
+) {
   return fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({
+      name,
+      ...(extra?.id ? { id: extra.id } : {}),
+      ...(extra?.side ? { side: extra.side } : {}),
+    }),
     keepalive: true,
   })
 }

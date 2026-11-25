@@ -124,21 +124,16 @@ export function parseGuestImport(text: string): { guests: GuestDraft[]; duplicat
     found.push(...guestsFromCells(splitLine(line)))
   }
 
-  const byKey = new Map<string, GuestDraft>()
+  const seen = new Set<string>()
   let duplicates = 0
+  const guests: GuestDraft[] = []
   for (const guest of found) {
     const key = guestKey(guest.name)
     if (!key) continue
-    const prev = byKey.get(key)
-    if (!prev) byKey.set(key, guest)
-    else {
-      duplicates += 1
-      const phone = prev.phone || guest.phone
-      const side = prev.side || guest.side
-      if (phone !== prev.phone || side !== prev.side) byKey.set(key, { name: prev.name, phone, side })
-    }
+    if (seen.has(key)) duplicates += 1
+    else seen.add(key)
+    guests.push(guest)
   }
 
-  const guests = [...byKey.values()]
   return { guests: guests.slice(0, MAX_IMPORT), duplicates, truncated: guests.length > MAX_IMPORT }
 }

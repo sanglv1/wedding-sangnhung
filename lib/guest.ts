@@ -22,9 +22,59 @@ export function readGuestName(search: string): string | null {
   return name || null
 }
 
-/** Khoá so khớp một khách mời: "Chị  Lan" và "chị lan" là cùng một người */
+/** Khoá so khớp tên: "Chị  Lan" và "chị lan" là cùng một tên. */
 export function guestKey(name: string) {
   return name.normalize('NFC').replace(/\s+/g, ' ').trim().slice(0, MAX_GUEST_NAME_LENGTH).toLocaleLowerCase('vi')
+}
+
+/**
+ * Khoá lưu một khách. Người đầu tiên giữ khoá theo tên để link cũ vẫn khớp.
+ * Tên trùng nhận hậu tố :2, :3, ... để mỗi người một bản ghi.
+ */
+export function allocateGuestKey(name: string, taken: Set<string>) {
+  const base = guestKey(name)
+  if (!base) return ''
+  if (!taken.has(base)) {
+    taken.add(base)
+    return base
+  }
+  let n = 2
+  while (taken.has(`${base}:${n}`)) n += 1
+  const key = `${base}:${n}`
+  taken.add(key)
+  return key
+}
+
+/** Chọn đúng khách khi có nhiều người trùng tên. Mã trên link được ưu tiên. */
+export function matchGuest<T extends { key: string; name: string; side?: GuestSide | null }>(
+  guests: readonly T[],
+  name: string,
+  id?: string | null,
+  side?: GuestSide | null,
+): T | null {
+  const wanted = guestKey(name)
+  if (!wanted) return null
+  if (id) {
+    const byId = guests.find((guest) => guest.key === id)
+    if (byId) return byId
+  }
+  const matches = guests.filter((guest) => guestKey(guest.name) === wanted)
+  if (matches.length === 0) return null
+  if (matches.length === 1) return matches[0]
+  if (side) {
+    const sided = matches.filter((guest) => guest.side === side)
+    if (sided.length === 1) return sided[0]
+    if (sided.length > 1) return sided.find((guest) => guest.key === wanted) ?? sided[0]
+  }
+  return matches.find((guest) => guest.key === wanted) ?? matches[0]
+}
+
+/** Mã khách trên link mời, để biết đúng người khi trùng tên */
+export function readGuestId(search: string): string | null {
+  const raw = new URLSearchParams(search).get('ma')?.trim()
+  if (!raw) return null
+  const id = raw.replace(/\s+/g, ' ').slice(0, 80)
+  return id || null
 }
 
 /** Link "Mở thử" của người quản lý có thêm tham số này để không tính là khách đã mở */
@@ -35,10 +85,18 @@ function readableQueryValue(value: string) {
   return value.replace(/[&=#?%+]/g, (char) => encodeURIComponent(char)).replace(/ /g, '+')
 }
 
-export function guestLink(origin: string, name: string, preview = false, path = '/', side?: GuestSide | null) {
+export function guestLink(
+  origin: string,
+  name: string,
+  preview = false,
+  path = '/',
+  side?: GuestSide | null,
+  id?: string | null,
+) {
   const guest = name.normalize('NFC').replace(/\s+/g, ' ').trim()
   const parts = [`to=${readableQueryValue(guest)}`]
   if (side) parts.push(`nha=${sideParam(side)}`)
+  if (id) parts.push(`ma=${readableQueryValue(id)}`)
   if (preview) parts.push(`${PREVIEW_PARAM}=1`)
   return `${origin}${path}?${parts.join('&')}`
 }
