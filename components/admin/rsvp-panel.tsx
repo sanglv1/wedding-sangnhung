@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Download, Phone, RefreshCw, Trash2 } from 'lucide-react'
 import { deleteRsvp, fetchRsvps, headcount, type RsvpEntry } from '@/lib/rsvp'
+import { haystack, matchRank, matchesQuery, parseQuery } from '@/lib/search-text'
+import { Highlight } from './search-box'
 import { Badge, BTN, BTN_DANGER, dateFormatter, downloadCsv, errorText, FilterChips, StatCard } from './shared'
 
 type Attend = 'all' | 'yes' | 'no'
@@ -16,7 +18,7 @@ function sumPeople(entries: RsvpEntry[]) {
   return atLeast ? `${total}+` : String(total)
 }
 
-export function RsvpPanel({ password }: { password: string }) {
+export function RsvpPanel({ password, query }: { password: string; query: string }) {
   const [entries, setEntries] = useState<RsvpEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -43,14 +45,32 @@ export function RsvpPanel({ password }: { password: string }) {
   }, [refresh])
 
   const coming = entries.filter((e) => e.attending)
-  const shown = useMemo(
+  const parsed = useMemo(() => parseQuery(query), [query])
+  const indexed = useMemo(
     () =>
-      entries.filter(
-        (e) =>
-          (attend === 'all' || e.attending === (attend === 'yes')) && (side === 'all' || e.side === side),
-      ),
-    [entries, attend, side],
+      entries.map((entry) => ({
+        entry,
+        nameFold: haystack(entry.name, []).text,
+        search: haystack(
+          [entry.name, entry.note, entry.invite, entry.side === 'groom' ? 'nhà trai chú rể' : 'nhà gái cô dâu'].filter(Boolean).join(' '),
+          [entry.phone],
+        ),
+      })),
+    [entries],
   )
+  const { shown, hiddenByFilter } = useMemo(() => {
+    const passes = (entry: RsvpEntry) =>
+      (attend === 'all' || entry.attending === (attend === 'yes')) && (side === 'all' || entry.side === side)
+    const matched = indexed.filter((row) => matchesQuery(parsed, row.search))
+    const hits = matched.filter((row) => passes(row.entry))
+    const visible = parsed
+      ? hits
+          .map((row, index) => ({ row, index, rank: matchRank(row.nameFold, row.search.phones[0] ?? '', parsed) }))
+          .sort((a, b) => a.rank - b.rank || a.index - b.index)
+          .map((item) => item.row.entry)
+      : hits.map((row) => row.entry)
+    return { shown: visible, hiddenByFilter: parsed ? matched.length - hits.length : 0 }
+  }, [indexed, parsed, attend, side])
 
   const remove = async (entry: RsvpEntry) => {
     if (!window.confirm(`Xoá xác nhận của "${entry.name}"?`)) return
@@ -89,6 +109,28 @@ export function RsvpPanel({ password }: { password: string }) {
         <StatCard label="Nhà trai" value={sumPeople(coming.filter((e) => e.side === 'groom'))} hint="người" />
         <StatCard label="Nhà gái" value={sumPeople(coming.filter((e) => e.side === 'bride'))} hint="người" />
       </div>
+
+      {parsed && !loading && (
+        <p className="mb-3 text-sm text-w-muted" aria-live="polite">
+          {shown.length} xác nhận khớp “{parsed.raw}”
+          {hiddenByFilter > 0 && (
+            <>
+              {' '}
+              · {hiddenByFilter} phản hồi đang bị bộ lọc ẩn{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  setAttend('all')
+                  setSide('all')
+                }}
+                className="underline underline-offset-2"
+              >
+                Hiện tất cả
+              </button>
+            </>
+          )}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div className="flex flex-wrap gap-3">
@@ -129,7 +171,15 @@ export function RsvpPanel({ password }: { password: string }) {
         </p>
       )}
       {!loading && shown.length === 0 && !error && (
-        <p className="card-wedding rounded-2xl p-8 text-center text-w-muted">Chưa có xác nhận nào.</p>
+        <p className="card-wedding rounded-2xl p-8 text-center text-w-muted">
+          {parsed
+            ? hiddenByFilter > 0
+              ? `Có ${hiddenByFilter} xác nhận khớp “${parsed.raw}” nhưng đang bị bộ lọc ẩn.`
+              : `Không thấy khách khớp “${parsed.raw}”.`
+            : entries.length === 0
+              ? 'Chưa có xác nhận nào.'
+              : 'Không có xác nhận nào ở mục này.'}
+        </p>
       )}
 
       <ul className="space-y-3">
@@ -137,7 +187,9 @@ export function RsvpPanel({ password }: { password: string }) {
           <li key={e.id} className="card-wedding rounded-2xl p-4 sm:p-5 flex gap-4 items-start">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <p className="font-semibold text-w-strong break-words">{e.name}</p>
+                <p className="font-semibold text-w-strong break-words">
+                  <Highlight text={e.name} query={query} />
+                </p>
                 {e.attending ? (
                   <Badge tone="green">Sẽ đến · {e.guests} người</Badge>
                 ) : (
@@ -149,13 +201,17 @@ export function RsvpPanel({ password }: { password: string }) {
                 {e.phone && (
                   <a href={`tel:${e.phone}`} className="inline-flex items-center gap-1 underline underline-offset-2">
                     <Phone className="w-3.5 h-3.5" aria-hidden />
-                    {e.phone}
+                    <Highlight text={e.phone} query={query} />
                   </a>
                 )}
                 <span>{dateFormatter.format(new Date(e.updatedAt))}</span>
                 {e.invite && e.invite !== e.name && <span>Link mời: {e.invite}</span>}
               </p>
-              {e.note && <p className="mt-2 text-sm text-w-text whitespace-pre-line break-words">{e.note}</p>}
+              {e.note && (
+                <p className="mt-2 text-sm text-w-text whitespace-pre-line break-words">
+                  <Highlight text={e.note} query={query} />
+                </p>
+              )}
             </div>
             <button
               type="button"

@@ -7,7 +7,9 @@ import { guestKey, guestLink, type GuestSide } from '@/lib/guest'
 import { parseGuestImport, type GuestDraft } from '@/lib/guest-import'
 import { addGuests, deleteGuest, fetchGuests, setGuestSent, setGuestSide, type GuestRecord } from '@/lib/guests'
 import { fetchRsvps, type RsvpEntry } from '@/lib/rsvp'
+import { foldVi, haystack, matchRank, matchesQuery, parseQuery, type SearchHaystack } from '@/lib/search-text'
 import { isPhoneDevice, smsHref } from '@/lib/share-invite'
+import { Highlight } from './search-box'
 import { Badge, BTN, BTN_DANGER, copyText, dateFormatter, downloadCsv, errorText, FilterChips, StatCard } from './shared'
 
 type Filter = 'all' | 'unsent' | 'sent' | 'unopened' | 'opened' | 'replied' | 'unreplied'
@@ -98,9 +100,33 @@ function readTemplate() {
   }
 }
 
-type InviteRow = GuestRecord & { link: string; preview: string; message: string; rsvp?: RsvpEntry; duplicate: boolean }
+type InviteRow = GuestRecord & {
+  link: string
+  preview: string
+  message: string
+  rsvp?: RsvpEntry
+  duplicate: boolean
+  nameFold: string
+  search: SearchHaystack
+}
 
-export function GuestsPanel({ password }: { password: string }) {
+function passesFilter(row: InviteRow, filter: Filter) {
+  if (filter === 'unsent') return !row.sentAt
+  if (filter === 'sent') return Boolean(row.sentAt)
+  if (filter === 'unopened') return !row.opens
+  if (filter === 'opened') return Boolean(row.opens)
+  if (filter === 'replied') return Boolean(row.rsvp)
+  if (filter === 'unreplied') return !row.rsvp
+  return true
+}
+
+function sideLabel(side: GuestSide | undefined) {
+  if (side === 'groom') return 'chú rể nhà trai'
+  if (side === 'bride') return 'cô dâu nhà gái'
+  return 'chưa chọn nhà'
+}
+
+export function GuestsPanel({ password, query }: { password: string; query: string }) {
   const origin = useSyncExternalStore(noopSubscribe, () => window.location.origin, () => '')
   const savedTemplate = useSyncExternalStore(noopSubscribe, readTemplate, () => DEFAULT_TEMPLATE)
   const phoneDevice = useSyncExternalStore(noopSubscribe, () => isPhoneDevice(navigator.userAgent), () => false)
@@ -188,19 +214,20 @@ export function GuestsPanel({ password }: { password: string }) {
 
   const duplicateNames = useMemo(() => {
     const map = new Map<string, number>()
-    for (const guest of houseGuests) {
-      const key = guestKey(guest.name)
+    for (const guest of guests) {
+      const key = `${guest.side ?? ''}:${guestKey(guest.name)}`
       map.set(key, (map.get(key) ?? 0) + 1)
     }
     return map
-  }, [houseGuests])
+  }, [guests])
 
-  const rows = useMemo(
+  const allRows = useMemo(
     () =>
-      houseGuests.map((g) => {
+      guests.map((g) => {
         const link = guestLink(origin, g.name, false, '/', g.side, g.key)
         const place = houseBits(g.side)
         const nameKey = guestKey(g.name)
+        const rsvp = (nameOwners.get(nameKey) ?? 0) === 1 ? rsvpByGuest.get(nameKey) : undefined
         return {
           ...g,
           link,
@@ -211,22 +238,30 @@ export function GuestsPanel({ password }: { password: string }) {
             .replaceAll('{nha}', place.nha)
             .replaceAll('{diachi}', place.diachi)
             .replaceAll('{gio}', place.gio),
-          rsvp: (nameOwners.get(nameKey) ?? 0) === 1 ? rsvpByGuest.get(nameKey) : undefined,
-          duplicate: (duplicateNames.get(nameKey) ?? 0) > 1,
+          rsvp,
+          duplicate: (duplicateNames.get(`${g.side ?? ''}:${nameKey}`) ?? 0) > 1,
+          nameFold: foldVi(g.name),
+          search: haystack([g.name, sideLabel(g.side), rsvp?.name, rsvp?.note].filter(Boolean).join(' '), [g.phone, rsvp?.phone]),
         }
       }),
-    [houseGuests, origin, template, rsvpByGuest, nameOwners, duplicateNames],
+    [guests, origin, template, rsvpByGuest, nameOwners, duplicateNames],
   )
 
-  const shown = rows.filter((r) => {
-    if (filter === 'unsent') return !r.sentAt
-    if (filter === 'sent') return Boolean(r.sentAt)
-    if (filter === 'unopened') return !r.opens
-    if (filter === 'opened') return Boolean(r.opens)
-    if (filter === 'replied') return Boolean(r.rsvp)
-    if (filter === 'unreplied') return !r.rsvp
-    return true
-  })
+  const rows = useMemo(() => allRows.filter((guest) => inHouse(guest, house)), [allRows, house])
+  const parsed = useMemo(() => parseQuery(query), [query])
+  const shown = useMemo(() => {
+    const pool = parsed ? allRows : rows
+    const hits = pool.filter((row) => matchesQuery(parsed, row.search) && passesFilter(row, filter))
+    if (!parsed) return hits
+    return hits
+      .map((row, index) => ({ row, index, rank: matchRank(row.nameFold, row.search.phones[0] ?? '', parsed) }))
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .map((item) => item.row)
+  }, [parsed, allRows, rows, filter])
+  const hiddenByFilter = useMemo(() => {
+    if (!parsed) return 0
+    return allRows.filter((row) => matchesQuery(parsed, row.search) && !passesFilter(row, filter)).length
+  }, [parsed, allRows, filter])
 
   const imported = useMemo(() => parseGuestImport(namesText), [namesText])
   const pending = useMemo(
@@ -414,13 +449,16 @@ export function GuestsPanel({ password }: { password: string }) {
           </button>
         ))}
       </div>
+      {!parsed && (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <StatCard label={house === 'bride' ? 'Khách cô dâu' : house === 'none' ? 'Chưa chọn nhà' : 'Khách chú rể'} value={rows.length} />
         <StatCard label="Chưa gửi" value={unsentCount} hint={sentCount > 0 ? `${sentCount} đã gửi` : undefined} />
         <StatCard label="Đã mở thiệp" value={openedCount} hint={`${rows.length - openedCount} chưa mở`} />
         <StatCard label="Đã xác nhận" value={repliedCount} hint={`${rows.length - repliedCount} chưa trả lời`} />
       </div>
+      )}
 
+      {!parsed && (
       <div
         className="card-wedding rounded-2xl p-5 sm:p-6 space-y-5 mb-6"
         onDragOver={(e) => e.preventDefault()}
@@ -523,8 +561,9 @@ export function GuestsPanel({ password }: { password: string }) {
           )}
         </div>
       </div>
+      )}
 
-      {nextUnsent && (
+      {!parsed && nextUnsent && (
         <div className="card-wedding rounded-2xl p-5 sm:p-6 mb-6">
           <p className="text-xs font-medium uppercase tracking-wide text-w-muted">Gửi lần lượt · còn {unsentCount}</p>
           <p className="mt-1 font-serif text-3xl text-w-strong break-words">{nextUnsent.name}</p>
@@ -558,6 +597,22 @@ export function GuestsPanel({ password }: { password: string }) {
           </p>
           {pasteHint === nextUnsent.key && <p className="mt-2 text-sm text-green-700">Đã chép. Dán vào Zalo bằng Ctrl+V.</p>}
         </div>
+      )}
+
+      {parsed && !loading && (
+        <p className="mb-3 text-sm text-w-muted" aria-live="polite">
+          {shown.length} khách khớp “{parsed.raw}”
+          {shown.some((row) => !inHouse(row, house)) ? ' · gồm khách ở nhà khác' : ''}
+          {hiddenByFilter > 0 && (
+            <>
+              {' '}
+              · {hiddenByFilter} khách đang bị bộ lọc ẩn{' '}
+              <button type="button" onClick={() => setFilter('all')} className="underline underline-offset-2">
+                Hiện mọi trạng thái
+              </button>
+            </>
+          )}
+        </p>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -602,7 +657,13 @@ export function GuestsPanel({ password }: { password: string }) {
       )}
       {!loading && shown.length === 0 && !error && (
         <p className="card-wedding rounded-2xl p-8 text-center text-w-muted">
-          {rows.length === 0 ? `Chưa có ${audience(house)}. Dán tên hoặc chọn file ở ô phía trên.` : 'Không có khách nào ở mục này.'}
+          {parsed
+            ? hiddenByFilter > 0
+              ? `Có ${hiddenByFilter} khách khớp “${parsed.raw}” nhưng đang bị bộ lọc trạng thái ẩn.`
+              : `Không thấy khách khớp “${parsed.raw}”.`
+            : rows.length === 0
+              ? `Chưa có ${audience(house)}. Dán tên hoặc chọn file ở ô phía trên.`
+              : 'Không có khách nào ở mục này.'}
         </p>
       )}
 
@@ -610,7 +671,12 @@ export function GuestsPanel({ password }: { password: string }) {
         {shown.map((r) => (
           <li key={r.key} className="card-wedding rounded-2xl p-4 sm:p-5">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <p className="font-semibold text-w-strong break-words">{r.name}</p>
+              <p className="font-semibold text-w-strong break-words">
+                <Highlight text={r.name} query={query} />
+              </p>
+              {parsed && (
+                <Badge tone="gold">{r.side === 'bride' ? 'Cô dâu' : r.side === 'groom' ? 'Chú rể' : 'Chưa chọn nhà'}</Badge>
+              )}
               {r.duplicate && <Badge tone="gray">Trùng tên</Badge>}
               {r.sentAt ? <Badge tone="gold">Đã gửi</Badge> : <Badge tone="gray">Chưa gửi</Badge>}
               {r.opens ? (
@@ -625,7 +691,11 @@ export function GuestsPanel({ password }: { password: string }) {
                   <Badge tone="red">Không đến</Badge>
                 ))}
             </div>
-            {r.phone && <p className="text-xs text-w-muted mb-1">{r.phone}</p>}
+            {r.phone && (
+              <p className="text-xs text-w-muted mb-1">
+                <Highlight text={r.phone} query={query} />
+              </p>
+            )}
             {r.opens && (
               <p className="text-xs text-w-muted mb-1">
                 Mở lần đầu {dateFormatter.format(new Date(r.opens.first))}

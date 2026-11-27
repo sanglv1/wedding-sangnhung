@@ -6,6 +6,7 @@ import { ADMIN_PASSWORD_KEY, verifyGuestbookPassword } from '@/lib/guestbook'
 import { GuestbookPanel } from './guestbook-panel'
 import { GuestsPanel } from './guests-panel'
 import { RsvpPanel } from './rsvp-panel'
+import { SearchBox } from './search-box'
 import { BTN, errorText } from './shared'
 
 const TABS = [
@@ -31,6 +32,7 @@ export function AdminDashboard() {
   const [input, setInput] = useState('')
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     const saved = sessionStorage.getItem(ADMIN_PASSWORD_KEY)
@@ -104,35 +106,39 @@ export function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-screen max-w-4xl mx-auto px-4 py-8 sm:py-12">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <h1 className="font-serif text-3xl sm:text-4xl text-w-strong">Trang quản lý</h1>
-        <button type="button" onClick={logout} className={BTN}>
-          <LogOut className="w-4 h-4" aria-hidden />
-          Thoát
-        </button>
-      </div>
-
-      <div role="tablist" className="flex gap-1 mb-6 border-b border-w-gold/30 overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => selectTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
-              tab === t.id ? 'border-w-btn text-w-strong' : 'border-transparent text-w-muted hover:text-w-text'
-            }`}
-          >
-            {t.label}
+    <main className="min-h-screen max-w-4xl mx-auto px-4 pb-12">
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-6 sm:pt-8 pb-3 mb-6 bg-[var(--w-header-bg)] backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h1 className="font-serif text-3xl sm:text-4xl text-w-strong">Trang quản lý</h1>
+          <button type="button" onClick={logout} className={BTN}>
+            <LogOut className="w-4 h-4" aria-hidden />
+            Thoát
           </button>
-        ))}
+        </div>
+
+        <SearchBox id="admin-search" value={query} onChange={setQuery} />
+
+        <div role="tablist" className="flex gap-1 mt-4 border-b border-w-gold/30 overflow-x-auto">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => selectTab(t.id)}
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors ${
+                tab === t.id ? 'border-w-btn text-w-strong' : 'border-transparent text-w-muted hover:text-w-text'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {tab === 'xac-nhan' && <RsvpPanel password={password} />}
-      {tab === 'khach-moi' && <GuestsPanel password={password} />}
-      {tab === 'loi-chuc' && <GuestbookPanel password={password} />}
+      {tab === 'xac-nhan' && <RsvpPanel password={password} query={query} />}
+      {tab === 'khach-moi' && <GuestsPanel password={password} query={query} />}
+      {tab === 'loi-chuc' && <GuestbookPanel password={password} query={query} />}
     </main>
   )
 }
